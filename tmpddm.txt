@@ -1,0 +1,8 @@
+"tomatofall"
+{
+	"base"		"base"
+	"title"		"Pizza Delivery Deathmatch"
+	"maps"		"^gm_bigcity"
+	"menusystem"	"1"
+
+}
