@@ -100,7 +100,7 @@ function SWEP:SetupDataTables()
 end
 
 
-local matBeam = Material( "cable/cable_metalwinch01" )
+local matBeam = Material( "cable/rope" )
 local ca = Color(255,255,255,255)
 hook.Add("PostDrawTranslucentRenderables", "TF_Roping", function()
     render.SetMaterial( matBeam )

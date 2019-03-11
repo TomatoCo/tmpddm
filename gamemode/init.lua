@@ -1,6 +1,7 @@
 resource.AddFile("materials/pickup.png")
 resource.AddFile("materials/dropoff.png")
 resource.AddFile("materials/pizza.png")
+resource.AddFile("sound/pizzatime.mp3")
 
 AddCSLuaFile( "cl_init.lua" )
 AddCSLuaFile( "shared.lua" )
@@ -196,6 +197,9 @@ function GM:PlayerSetModel(ply)
     ply:SetModel("models/player/group01/male_07.mdl") --TODO allow them to select a model
 end
 
+function GM:PlayerInitialSpawn(ply)
+    ply:SendLua("TMPDDM_MOTD()")
+end
 
 function GM:PlayerSpawn( ply )
     -- Your code

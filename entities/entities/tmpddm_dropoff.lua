@@ -17,8 +17,10 @@ function ENT:StartTouch(ent)
     if ent:IsPlayer() then
         if ent:GetHasPizza() then
             ent:SetHasPizza(false)
-            ent:SetScore(ent:GetScore()+1)
+            local score = ent:GetScore()+1
+            ent:SetScore(score)
             if SERVER then
+                PrintMessage(HUD_PRINTCENTER, ent:GetName() .. " has delivered a pizza! Their score is " .. score)
                 GAMEMODE:SpawnPizza()
                 self:Remove()
             end
