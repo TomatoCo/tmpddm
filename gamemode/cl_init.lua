@@ -36,7 +36,6 @@ local function drawIcon(ent, icon, texttop, textbottom)
         surface.SetTextPos(ScrW()/2, ScrH()/2)
         local w1, h1 = surface.GetTextSize(texttop)
         local w2, h2 = surface.GetTextSize(textbottom)
-        print(w1)
         local x1, y1 = x - 32 + (32 - w1/2), y - 32 - h1
         local x2, y2 = x - 32 + (32 - w2/2), y + 32
         surface.SetTextColor(0,0,0,255)
@@ -130,10 +129,9 @@ speedrun of objectives:
 Pick up pizza from the Pickup points, deliver it to the Dropoff points.
 Intercept pizza carriers to stop them from scoring.
 Quote Raimi Spiderman as much as possible.
-
-Ignore how rough the gamemode is. I made it in like 2 hours. Fuck off.
-Join our discord. Ask for TomatoSoup. Leave feedback. https://discord.gg/xUWv7pH
 ]]
+
+local contact = "Join our discord. Ask for TomatoSoup. Leave feedback. https://discord.gg/xUWv7pH"
 
 function TMPDDM_MOTD()
 
@@ -157,8 +155,15 @@ function TMPDDM_MOTD()
     InstructionsLabel:SetPos( 5, 5 )
     InstructionsLabel:SetText( instructions )
     InstructionsLabel:SetFont("Trebuchet18")
-    InstructionsLabel:SetSize( 1200, 570)
+    InstructionsLabel:SetSize( 700, 285)
     InstructionsLabel:SetDark(true)
+
+    local ContactLabel = vgui.Create( "DLabel", TopPanel )
+    ContactLabel:SetPos( 5, 295 )
+    ContactLabel:SetText( contact )
+    ContactLabel:SetFont("Trebuchet18")
+    ContactLabel:SetSize( 700, 280)
+    ContactLabel:SetDark(true)
 
     local DoneButton = vgui.Create( "DButton", IntroFrame )
     DoneButton:SetText( "LET ME DELIVER PIZZA" )
