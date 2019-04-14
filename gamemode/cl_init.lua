@@ -83,6 +83,7 @@ function GM:HUDPaint()
             drawIcon(holder, carrierIcon, "KILL", dist .. "m")
         else
             destText = "GOAL"
+            
             --TODO draw shit on the screen.
         end
     end
@@ -118,18 +119,20 @@ speedrun of instructions:
 Shift to sprint, reel in rope, and wallrun.
 Spacebar to jump off of a wall and double jump.
 Wallrunning is pretty automatic but holding left/right towards the wall can hint the code to what you really want.
+Look up or down to control your vertical direction while wall running. Forward increases your speed.
 Double jump resets whenever you stand on the ground or begin wall running.
 Rightclick to deploy your rope. And undeploy it. The rope CAN break from excessive tension.
-Look up or down to control your vertical direction while wall running. Forward increases your speed
+You can also shoot a rope connection point to break it. Ignore the watermelon gibs. I just needed a breakable prop.
 Remember, angular momentum is conserved. Reel in rope to go faster.
-You always exit a swing perpendicular to the rope. Always try to enter perpendicular.
+You always exit a swing perpendicular to the rope. Always try to enter perpendicular to keep your speed.
 
 speedrun of objectives:
 Pick up pizza from the Pickup points, deliver it to the Dropoff points.
 Intercept pizza carriers to stop them from scoring.
+Quote Raimi Spiderman as much as possible.
 
 Ignore how rough the gamemode is. I made it in like 2 hours. Fuck off.
-Join our discord. Leave feedback. https://discord.gg/xUWv7pH
+Join our discord. Ask for TomatoSoup. Leave feedback. https://discord.gg/xUWv7pH
 ]]
 
 function TMPDDM_MOTD()
@@ -137,7 +140,7 @@ function TMPDDM_MOTD()
     IntroFrame = vgui.Create( "DFrame" )
     IntroFrame:SetPos( 25,25 )
     IntroFrame:SetSize( 1230, 670 )
-    IntroFrame:SetTitle( "-( ͡° ͜ʖ ͡°)╯╲___卐卐卐卐 don't mind me just walking my devs" ) --TODO really
+    IntroFrame:SetTitle( "-( ͡° ͜ʖ ͡°)╯ hello there!" )
     IntroFrame:SetVisible( true )
     IntroFrame:SetDraggable( true )
     IntroFrame:ShowCloseButton( true )
@@ -151,10 +154,10 @@ function TMPDDM_MOTD()
     TopPanel:SetSize( 1210, 580)
 
     local InstructionsLabel = vgui.Create( "DLabel", TopPanel )
-    InstructionsLabel:SetPos( 0, 0 )
+    InstructionsLabel:SetPos( 5, 5 )
     InstructionsLabel:SetText( instructions )
     InstructionsLabel:SetFont("Trebuchet18")
-    InstructionsLabel:SetSize( 1210, 580)
+    InstructionsLabel:SetSize( 1200, 570)
     InstructionsLabel:SetDark(true)
 
     local DoneButton = vgui.Create( "DButton", IntroFrame )

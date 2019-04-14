@@ -18,9 +18,20 @@ function ENT:StartTouch(ent)
         if ent:GetHasPizza() then
             ent:SetHasPizza(false)
             local score = ent:GetScore()+1
-            ent:SetScore(score)
+            if score == 10 then
+                for k,v in pairs(player.GetAll()) do
+                    v:SetScore(0)
+                end
+                if SERVER then
+                    PrintMessage(HUD_PRINTCENTER, ent:GetName() .. " has delivered ten pizzas! Restarting the scores")
+                end
+            else
+                ent:SetScore(score)
+                if SERVER then
+                    PrintMessage(HUD_PRINTCENTER, ent:GetName() .. " has delivered a pizza! Their score is " .. score)
+                end
+            end
             if SERVER then
-                PrintMessage(HUD_PRINTCENTER, ent:GetName() .. " has delivered a pizza! Their score is " .. score)
                 GAMEMODE:SpawnPizza()
                 self:Remove()
             end

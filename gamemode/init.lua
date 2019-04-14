@@ -179,6 +179,8 @@ function GM:SpawnPizza(suppressDropoff)
         structure:SetPos(secondPos)
         structure:Spawn()
 
+    else
+        structure:StartDrop()
     end
 
 end
