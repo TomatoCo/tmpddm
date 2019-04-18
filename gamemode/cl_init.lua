@@ -7,6 +7,8 @@ local carrierIcon = Material("materials/pizza.png")
 local tr = {}
 local trace = {start = Vector(0,0,0), endpos = Vector(0,0,0), filter = LocalPlayer(), output = tr}
 
+local HASPIZZA = "You have the PIZZA!"
+
 local function drawIcon(ent, icon, texttop, textbottom)
     local pos = ent:GetPos()
     local res = pos:ToScreen()
@@ -54,46 +56,95 @@ local function drawIcon(ent, icon, texttop, textbottom)
     end
 end
 
+local function convertDist(dist)
+    return math.floor(dist / 52.5 + 0.5)
+end
+
+
 function GM:HUDPaint()
 
-    local pickup, dropoff, holder
+    local plys = {}
+    for k,v in pairs(player.GetAll()) do
+        plys[#plys+1] = v
+    end
+    table.sort(plys, function(a,b) return a:GetScore() > b:GetScore() end) -- high to low
+    local ordered = {}
+    for i,v in ipairs(plys) do
+        if i <= 3 or i == #plys or v == LocalPlayer() then
+            ordered[#ordered+1] = v:GetScore() .. ": " .. v:Nick()
+        elseif ordered[#ordered] ~= "..." then
+            ordered[#ordered+1] = "..."
+        end
+    end
+
+    surface.SetFont( "Trebuchet24" )
+    surface.SetTextColor(0,0,0,255)
+    surface.SetTextPos(1,1)
+    local maxwidth = 0
+    for _,v in ipairs(ordered) do
+        local w,h = surface.GetTextSize(v)
+        maxwidth = max(maxwidth, w)
+    end
+    maxwidth = maxwidth + 5
+
+    local x = ScrW() - maxwidth
+    local y = 0
+    for _,v in ipairs(ordered) do
+        local w, h = surface.GetTextSize(v)
+        surface.SetTextPos(x+1, y+1)
+        surface.DrawText(v)
+        y = y + h
+    end
+
+    local y = 0
+    surface.SetTextColor(255,255,255,255)
+    for _,v in ipairs(ordered) do
+        local w, h = surface.GetTextSize(v)
+        surface.SetTextPos(x, y)
+        surface.DrawText(v)
+        y = y + h
+    end
+
+    local destText = "Dropoff"
+    if LocalPlayer():GetHasPizza() then
+        destText = "GOAL"
+        local w,h = surface.GetTextSize(HASPIZZA)
+        local x = ScrW()/2 - w/2
+        local y = ScrH()/2 + ScrH()/10 - h/2
+        surface.SetTextColor(0,0,0,255)
+        surface.SetTextPos(x+1, y+1)
+        surface.DrawText(HASPIZZA)
+        surface.SetTextColor(255,255,255,255)
+        surface.SetTextPos(x, y)
+        surface.DrawText(HASPIZZA)
+
+        --TODO draw shit on screen
+    else
+        for k,v in pairs(player.GetAll()) do
+            if v:GetHasPizza() then
+                destText = "Guard"
+            end
+        end
+    end
+
     for _,v in pairs(ents.GetAll()) do
         if v:IsPlayer() then
-            if v:GetHasPizza() then
-                holder = v
+            if IsValid(v) and v:GetHasPizza() then
+                if v ~= LocalPlayer() then
+                    local dist = convertDist(v:GetPos():Distance(LocalPlayer():GetPos()))
+                    drawIcon(v, carrierIcon, "KILL", dist .. "m")
+                end
             end
         else
             local class = v:GetClass()
             if class == "tmpddm_pickup" then
-                pickup = v
+                local dist = convertDist(v:GetPos():Distance(LocalPlayer():GetPos()))
+                drawIcon(v, pickupIcon, "Pickup", dist .. "m")
             elseif class == "tmpddm_dropoff" then
-                dropoff = v
+                local dist = convertDist(v:GetPos():Distance(LocalPlayer():GetPos()))
+                drawIcon(v, dropoffIcon, destText, dist .. "m")
             end
         end
-
-    end
-
-    local destText = "Dropoff"
-    local dist
-    if IsValid(holder) then
-        if holder ~= LocalPlayer() then
-            dist = math.floor(holder:GetPos():Distance(LocalPlayer():GetPos()) / 52.5 + 0.5)
-            destText = "Guard"
-            drawIcon(holder, carrierIcon, "KILL", dist .. "m")
-        else
-            destText = "GOAL"
-            
-            --TODO draw shit on the screen.
-        end
-    end
-
-    if IsValid(pickup) then
-        dist = math.floor(pickup:GetPos():Distance(LocalPlayer():GetPos()) / 52.5 + 0.5)
-        drawIcon(pickup, pickupIcon, "Pickup", dist .. "m")
-    end
-    if IsValid(dropoff) then
-        dist = math.floor(dropoff:GetPos():Distance(LocalPlayer():GetPos()) / 52.5 + 0.5)
-        drawIcon(dropoff, dropoffIcon, destText, dist .. "m")
     end
 
     -- draw pizzas

@@ -55,8 +55,9 @@ SWEP.DoesStuff = true
 
 function SWEP:PrimaryAttack()
     self:EmitSound(Sound(self.Primary.Sound))
-    self:ShootBullet(15, 20, 0.1)
-    self:SetNextPrimaryFire( CurTime() + 0.2 )
+    self:ShootBullet(15, 12, 0.15) --dmg, shots, spread
+    self:SetNextPrimaryFire( CurTime() + 0.5 )
+    self.Owner:SetInvulnTimer(0)
 end
 
 function SWEP:Reload()
@@ -79,22 +80,24 @@ function SWEP:SetupDataTables()
 
     self:NetworkVar( "Bool", 3, "HasFinishedUnroping")
 
+    self:NetworkVar( "Float", 1, "Reloading")
+    self:NetworkVar( "Float", 2, "TriggerDownTime")
+
    if SERVER then
         self:SetRoping(false)
         self:SetRopeLength(0)
         self:SetRopeTarget(nil)
         self:SetRopedEnt(nil)
 
-        self:SetDoubleJumped(false)
+        self:SetDoubleJumped(true)
 
         self:SetWallRunning(false)
         self:SetWallDir(Vector(0,0,0))
 
         self:SetHasFinishedUnroping(false)
-        --to add,
-        --ints: titan health, shield, energy, heat, corresponding maxes.
-        --floats: possibly 3-4 for the other titan special cooldowns? plus one for the ult meter.
-        --bools: titan doomed
+
+        self:SetReloading(0)
+        self:SetTriggerDownTime(0)
     end
 
 end
@@ -472,6 +475,15 @@ local function SprintBoostJump(ply, md, dt, wep)
     end
 end
 
+local function PackUpWeapon(ply, wep)
+    if wep:GetRoping() then
+        RopeOff(ply, wep)
+    end
+    wep:SetWallDir(Vector(0,0,0))
+    wep:SetWallRunning(false)
+    wep:SetDoubleJumped(true)
+end
+
 hook.Add("Move", "DoTheMoveful", function(ply, md)
 
     local dt = FrameTime()
@@ -479,13 +491,9 @@ hook.Add("Move", "DoTheMoveful", function(ply, md)
     local wep = ply:GetActiveWeapon()
 
     if wep.DoesStuff then
-        if not ply:Alive() then
-            if wep:GetRoping() then
-                RopeOff(ply, wep) --TODO need to get rid of the melon on death/holster/etc.
-            end
-            wep:SetWallDir(Vector(0,0,0))
-            wep:SetWallRunning(false)
-            wep:SetDoubleJumped(false)
+
+        if (wep:GetReloading() > 0) then
+            PackUpWeapon(ply, wep)
         else
             Roping(ply, md, dt, wep)
             WallRunning(ply, md, dt, wep)
@@ -494,6 +502,16 @@ hook.Add("Move", "DoTheMoveful", function(ply, md)
         end
     end
 end)
+
+function SWEP:OnRemove()
+    PackUpWeapon(self.Owner, self)
+end
+function SWEP:Holster()
+    PackUpWeapon(self.Owner, self)
+end
+function SWEP:OnDrop()
+    PackUpWeapon(self.Owner, self)
+end
 
 
 if CLIENT then

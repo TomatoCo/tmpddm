@@ -156,7 +156,7 @@ local PizzaPositions = {
 function GM:SpawnPizza(suppressDropoff)
 
     local firstPos = PizzaPositions[math.random(#PizzaPositions)]
-    print(tostring(firstPos))
+    print("Spawning pickup " .. tostring(firstPos))
 
     local structure = ents.Create("tmpddm_pickup")
     structure:SetPos(firstPos)
@@ -173,21 +173,20 @@ function GM:SpawnPizza(suppressDropoff)
         table.sort(candidates, function(a,b) return a:DistToSqr(firstPos) < b:DistToSqr(firstPos) end)
 
         local secondPos = candidates[3]
-        print(tostring(secondPos))
+        print("Spawning dropoff " .. tostring(secondPos))
 
         structure = ents.Create("tmpddm_dropoff")
         structure:SetPos(secondPos)
         structure:Spawn()
 
-    else
-        structure:StartDrop()
     end
 
 end
 
 function GM:PlayerLoadout(ply)
 
-    ply:Give("wepbase") --TODO allow them to select from shotgun, SMG, and rifle
+    ply:Give("shotgun") --TODO allow them to select from shotgun, SMG, and rifle
+    ply:SetInvulnTimer(CurTime() + 10)
 
     ply:Flashlight(true)
     ply:AllowFlashlight(true)
@@ -202,6 +201,15 @@ end
 function GM:PlayerInitialSpawn(ply)
     ply:SendLua("TMPDDM_MOTD()")
 end
+function GM:ShowSpare1(ply)
+    ply:SendLua("TMPDDM_MOTD()")
+end
+
+hook.add("PlayerSay", "MOTDSAY", function(ply, text)
+    if text == "!motd" then
+        ply:SendLua("TMPDDM_MOTD()")
+    end
+end)
 
 function GM:PlayerSpawn( ply )
     -- Your code
@@ -215,6 +223,7 @@ function GM:PlayerSpawn( ply )
 end
 
 local function dropPizza(ply)
+    print("Spawning dead drop")
     if IsValid(ply) then
         ply:SetHasPizza(false)
 
@@ -223,8 +232,7 @@ local function dropPizza(ply)
         local structure = ents.Create("tmpddm_pickup")
         structure:SetPos(ply:GetPos())
         structure:Spawn()
-    else
-        self:SpawnPizza(true)
+        structure:StartDrop()
     end
 end
 
@@ -236,7 +244,9 @@ function GM:PlayerDeath(ply, wep, attacker)
 end
 
 function GM:PlayerDisconnected( ply ) 
-    dropPizza(ply)
+    if ply:GetHasPizza() then
+        dropPizza(ply)
+    end
 end
 
 

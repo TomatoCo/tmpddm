@@ -3,9 +3,11 @@ ENT.Type = "anim"
 
 function ENT:Initialize()
 
+    self:SetModel("models/props_junk/wood_crate001a.mdl")
+
     self:SetCollisionGroup( COLLISION_GROUP_WEAPON)
     self:SetSolid( SOLID_BBOX )
-    local b = 32
+    local b = 48
     self:SetCollisionBounds(Vector(-b, -b, -b), Vector(b,b,b))
     self.falling = false
     self.startpos = self:GetPos()
@@ -20,7 +22,8 @@ end
 
 function ENT:StartTouch(ent)
     if ent:IsPlayer() then
-        ent:SetHasPizza(true)            
+        ent:SetHasPizza(true)
+        ent:SetInvulnTimer(CurTime() + 2)
         if SERVER then
             self:Remove()
         end
