@@ -63,6 +63,8 @@ end
 
 function GM:HUDPaint()
 
+    --TODO custom health display with invulernability display.
+
     local plys = {}
     for k,v in pairs(player.GetAll()) do
         plys[#plys+1] = v

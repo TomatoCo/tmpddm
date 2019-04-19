@@ -185,7 +185,10 @@ end
 
 function GM:PlayerLoadout(ply)
 
-    ply:Give("shotgun") --TODO allow them to select from shotgun, SMG, and rifle
+    local desiredWeapon = tonumber(ply:GetInfo("tmpddm_weaponindex")) or 1
+    local weapon = WEAPON_LIST[desiredWeapon] or WEAPON_LIST[1]
+    ply:Give(weapon[2])
+    
     ply:SetInvulnTimer(CurTime() + 10)
 
     ply:Flashlight(true)
@@ -195,7 +198,12 @@ function GM:PlayerLoadout(ply)
 end
 
 function GM:PlayerSetModel(ply)
-    ply:SetModel("models/player/group01/male_07.mdl") --TODO allow them to select a model
+    local models = player_manager.AllValidModels()
+    local desiredModel = tostring(ply:GetInfo("tmpddm_playermodel")) or ""
+
+    --TODO Improve logic to lock out some models
+    local actualModel = models[desiredModel] or models["kleiner"]
+    ply:SetModel(actualModel)
 end
 
 function GM:PlayerInitialSpawn(ply)
@@ -217,6 +225,9 @@ function GM:PlayerSpawn( ply )
 
     ply:SetObserverMode(OBS_MODE_NONE) 
     ply:UnSpectate()
+
+    local ropeIndex = tonumber(ply:GetInfo("tmpddm_ropeindex")) or 1
+    ply:SetRopeIndex(ropeIndex)
 
     hook.Call( "PlayerLoadout", GAMEMODE, ply )
     hook.Call( "PlayerSetModel", GAMEMODE, ply )

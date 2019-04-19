@@ -103,10 +103,9 @@ function SWEP:SetupDataTables()
 end
 
 
-local matBeam = Material( "cable/rope" )
+local matBeamCache = {}
 local ca = Color(255,255,255,255)
 hook.Add("PostDrawTranslucentRenderables", "TF_Roping", function()
-    render.SetMaterial( matBeam )
     for k,v in pairs(player.GetAll()) do
         local wep = v:GetActiveWeapon()
         if wep.DoesStuff then
@@ -119,11 +118,25 @@ hook.Add("PostDrawTranslucentRenderables", "TF_Roping", function()
 
                     local texStart = texOffset*-0.4
                     local texEnd = texOffset*-0.4 + startPos:Distance(endPos) / 256
+
+                    local matIndex = v:GetRopeIndex()
+                    local matField = ROPE_LIST[matIndex]
+                    if matField == nil then
+                        matIndex = 1
+                        matField = ROPE_LIST[matIndex]
+                    end
+                    local mat = matBeamCache[matIndex]
+                    if mat == nil then
+                        mat = Material( matField[2] )
+                        matBeamCache[matIndex] = mat
+                    end
+
+                    render.SetMaterial( mat )
                     render.DrawBeam(startPos, endPos, 2, texStart, texEnd, ca)
                 end
             end
         end
-        end
+    end
 end)
 
 local boostSounds = {"player/suit_sprint.wav"}

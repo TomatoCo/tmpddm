@@ -1,30 +1,38 @@
-local WEAPON_LIST = {
-    {"shotgun", "models/weapons/w_shot_xm1014.mdl", "Shotgun", "Semi shotgun. No reloading."},
-    {"rifle", "models/weapons/w_shot_xm1014.mdl", "Rifle", "Semi rifle. Hold to charge and zoom. No reloading."},
-    {"machinegun", "models/weapons/w_shot_xm1014.mdl", "Machine Gun", "Powerful machine gun. Can't maneuver when reloading."}
+WEAPON_LIST = {
+    {"models/weapons/w_shot_xm1014.mdl", "shotgun", "Shotgun", "Semi shotgun. No reloading."}
+    --{"models/weapons/w_shot_xm1014.mdl", "rifle", "Rifle", "Semi rifle. Hold to charge and zoom. No reloading."},
+    --{ "models/weapons/w_shot_xm1014.mdl", "machinegun", "Machine Gun", "Powerful machine gun. Can't maneuver when reloading."}
 }
 
-local ROPE_LIST = {
-    {"rope", "cable/rope"},
+ROPE_LIST = {
+    {"Rope", "cable/rope"},
     {"Cable", "cable/cable2"},
     {"XBeam", "cable/xbeam"},
     {"Laser", "cable/redlaser"},
     {"Electric", "cable/blue_elec"},
     {"Physbeam", "cable/physbeam"},
     {"Hydra", "cable/hydra"}
-
 }
 
+MODEL_CONTROLS = {}
+MODEL_CONTROLS["breen"] = {"TomatoSoup"}
+
+
+
 if CLIENT then
+    CreateConVar( "tmpddm_playermodel", "NOTSET", { FCVAR_ARCHIVE, FCVAR_USERINFO }, "The player model to use" )
+    CreateConVar( "tmpddm_ropeindex", "0", { FCVAR_ARCHIVE, FCVAR_USERINFO }, "The player model to use" )
+    CreateConVar( "tmpddm_weaponindex", "0", { FCVAR_ARCHIVE, FCVAR_USERINFO }, "The player model to use" )
+
     local instructions = [[
     speedrun of instructions:
     Shift to sprint, reel in rope, and wallrun.
     Spacebar to jump off of a wall and double jump.
-    Wallrunning is pretty automatic but holding left/right towards the wall can hint the code to what you really want.
+    Wallrunning is pretty automatic. Hold left/right if it gives you trouble.
     Look up or down to control your vertical direction while wall running. Forward increases your speed.
     Double jump resets whenever you stand on the ground or begin wall running.
-    Rightclick to deploy your rope. And undeploy it. The rope CAN break from excessive tension.
-    You can also shoot a rope connection point to break it. Ignore the watermelon gibs. I just needed a breakable prop.
+    Rightclick to toggle your rope. The rope CAN break from excessive tension.
+    You can also shoot a rope connection point to break it. Ignore the watermelon gibs
     Remember, angular momentum is conserved. Reel in rope to go faster.
     You always exit a swing perpendicular to the rope. Always try to enter perpendicular to keep your speed.
 
@@ -69,7 +77,7 @@ if CLIENT then
         ContactLabel:SetDark(true)
 
         local SelectPanel = vgui.Create( "DPanel", IntroFrame )
-        SelectPanel:SetPos( 810, 30 )
+        SelectPanel:SetPos( 815, 30 )
         SelectPanel:SetSize( 400, 580)
 
 
@@ -89,18 +97,17 @@ if CLIENT then
         WeaponDescLabel:SetText("Hover a weapon for a quick description")
         WeaponDescLabel:SetDark(true)
 
-        for k,v in pairs(WEAPON_LIST) do
+        for i,v in ipairs(WEAPON_LIST) do
             local icon = WeaponList:Add("SpawnIcon")
-            icon:SetModel( v[2] )
+            icon:SetModel( v[1] )
             icon:SetSize( 64, 64 )
             icon:SetTooltip( v[3] )
             icon.OnCursorEntered = function()
                 WeaponDescLabel:SetText(v[4])
                 surface.PlaySound( "garrysmod/ui_hover.wav" )
-            end)
+            end
             icon.DoClick = function( self )
-                --TODO set var.
-                print(v[1])
+                RunConsoleCommand( "tmpddm_weaponindex", tostring(i) )
             end
         end
 
@@ -113,17 +120,16 @@ if CLIENT then
         RopeList:SetSpaceY( 5 ) -- Sets the space in between the panels on the Y Axis by 5
         RopeList:SetSpaceX( 5 ) -- Sets the space in between the panels on the X Axis by 5
 
-        for k,v in pairs(ROPE_LIST) do
+        for i,v in ipairs(ROPE_LIST) do
             local icon = RopeList:Add("DImageButton")
             icon:SetMaterial( v[2] )
-            icon:SetSize( 64, 64 )
-            icon:SetTooltip( v[3] )
+            icon:SetSize( 48, 64 )
+            icon:SetTooltip( v[1] )
             icon.OnCursorEntered = function()
                 surface.PlaySound( "garrysmod/ui_hover.wav" )
-            end)
+            end
             icon.DoClick = function( self )
-                --TODO set var.
-                print(v[1])
+                RunConsoleCommand( "tmpddm_ropeindex", tostring(i) )
             end
         end
 
@@ -144,10 +150,9 @@ if CLIENT then
             icon:SetTooltip( k )
             icon.OnCursorEntered = function()
                 surface.PlaySound( "garrysmod/ui_hover.wav" )
-            end)
+            end
             icon.DoClick = function( self )
-                --TODO set var.
-                print(v)
+                RunConsoleCommand( "tmpddm_playermodel", tostring(k) )
             end
         end
 
