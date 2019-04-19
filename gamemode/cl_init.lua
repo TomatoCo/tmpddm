@@ -83,7 +83,7 @@ function GM:HUDPaint()
     local maxwidth = 0
     for _,v in ipairs(ordered) do
         local w,h = surface.GetTextSize(v)
-        maxwidth = max(maxwidth, w)
+        maxwidth = math.max(maxwidth, w)
     end
     maxwidth = maxwidth + 5
 
