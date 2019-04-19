@@ -205,7 +205,7 @@ function GM:ShowSpare1(ply)
     ply:SendLua("TMPDDM_MOTD()")
 end
 
-hook.add("PlayerSay", "MOTDSAY", function(ply, text)
+hook.Add("PlayerSay", "MOTDSAY", function(ply, text)
     if text == "!motd" then
         ply:SendLua("TMPDDM_MOTD()")
     end

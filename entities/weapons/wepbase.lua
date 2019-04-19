@@ -337,8 +337,7 @@ local function Roping(ply, md, dt, wep)
 
                 local ropeForce
                 local strength = (stretch - ropeLength)
-                if tensionVelMag < 0 then
-                    --TODO what does this do?
+                if tensionVelMag < 0 then --TODO what does this do? Adds a little more force when moving away from the rope
                     ropeForce = tensionDir * ((tensionVelMag * -1.25) + strength)
                 else
                     ropeForce = tensionDir * strength

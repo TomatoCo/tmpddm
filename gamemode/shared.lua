@@ -4,8 +4,10 @@ GM.Email = "N/A"
 GM.Website = "N/A"
 
 AddCSLuaFile("player_ext.lua")
+AddCSLuaFile("menu.lua")
 
 include("player_ext.lua")
+include("menu.lua")
 
 function GM:Initialize()
     -- Do stuff

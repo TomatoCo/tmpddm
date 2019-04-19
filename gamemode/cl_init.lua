@@ -83,7 +83,7 @@ function GM:HUDPaint()
     local maxwidth = 0
     for _,v in ipairs(ordered) do
         local w,h = surface.GetTextSize(v)
-        maxwidth = max(maxwidth, w)
+        maxwidth = math.max(maxwidth, w)
     end
     maxwidth = maxwidth + 5
 
@@ -160,68 +160,6 @@ function GM:PostDrawViewModel( vm, ply, weapon )
         local hands = LocalPlayer():GetHands()
         if ( IsValid( hands ) ) then hands:DrawModel() end
 
-    end
-
-end
-
-local instructions = [[
-speedrun of instructions:
-Shift to sprint, reel in rope, and wallrun.
-Spacebar to jump off of a wall and double jump.
-Wallrunning is pretty automatic but holding left/right towards the wall can hint the code to what you really want.
-Look up or down to control your vertical direction while wall running. Forward increases your speed.
-Double jump resets whenever you stand on the ground or begin wall running.
-Rightclick to deploy your rope. And undeploy it. The rope CAN break from excessive tension.
-You can also shoot a rope connection point to break it. Ignore the watermelon gibs. I just needed a breakable prop.
-Remember, angular momentum is conserved. Reel in rope to go faster.
-You always exit a swing perpendicular to the rope. Always try to enter perpendicular to keep your speed.
-
-speedrun of objectives:
-Pick up pizza from the Pickup points, deliver it to the Dropoff points.
-Intercept pizza carriers to stop them from scoring.
-Quote Raimi Spiderman as much as possible.
-]]
-
-local contact = "Join our discord. Ask for TomatoSoup. Leave feedback. https://discord.gg/xUWv7pH"
-
-function TMPDDM_MOTD()
-
-    IntroFrame = vgui.Create( "DFrame" )
-    IntroFrame:SetPos( 25,25 )
-    IntroFrame:SetSize( 1230, 670 )
-    IntroFrame:SetTitle( "-( ͡° ͜ʖ ͡°)╯ hello there!" )
-    IntroFrame:SetVisible( true )
-    IntroFrame:SetDraggable( true )
-    IntroFrame:ShowCloseButton( true )
-    IntroFrame:MakePopup()
-    IntroFrame.OnClose = function()
-        surface.PlaySound("pizzatime.mp3")
-    end
-
-    local TopPanel = vgui.Create( "DPanel", IntroFrame )
-    TopPanel:SetPos( 10, 30 )
-    TopPanel:SetSize( 1210, 580)
-
-    local InstructionsLabel = vgui.Create( "DLabel", TopPanel )
-    InstructionsLabel:SetPos( 5, 5 )
-    InstructionsLabel:SetText( instructions )
-    InstructionsLabel:SetFont("Trebuchet18")
-    InstructionsLabel:SetSize( 700, 285)
-    InstructionsLabel:SetDark(true)
-
-    local ContactLabel = vgui.Create( "DLabel", TopPanel )
-    ContactLabel:SetPos( 5, 295 )
-    ContactLabel:SetText( contact )
-    ContactLabel:SetFont("Trebuchet18")
-    ContactLabel:SetSize( 700, 280)
-    ContactLabel:SetDark(true)
-
-    local DoneButton = vgui.Create( "DButton", IntroFrame )
-    DoneButton:SetText( "LET ME DELIVER PIZZA" )
-    DoneButton:SetPos( 490, 590 )
-    DoneButton:SetSize( 230, 30 )
-    DoneButton.DoClick = function()
-        IntroFrame:Close()
     end
 
 end
