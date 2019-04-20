@@ -1,6 +1,6 @@
 AddCSLuaFile( "shotgun.lua" )
 
-SWEP.PrintName = "Shotgun"
+SWEP.PrintName = "Rifle"
 
 SWEP.Author = "The guy who published"
 SWEP.Contact = "steam account"
@@ -14,8 +14,8 @@ SWEP.AdminSpawnable= true
 SWEP.AdminOnly = false
 
 SWEP.ViewModelFOV = 54
-SWEP.ViewModel = "models/weapons/cstrike/c_shot_xm1014.mdl"
-SWEP.WorldModel = "models/weapons/w_shot_xm1014.mdl"
+SWEP.ViewModel = "models/weapons/cstrike/c_rif_sg552.mdl"
+SWEP.WorldModel = "models/weapons/w_rif_sg552.mdl"
 SWEP.ViewModelFlip = false
 
 SWEP.AutoSwitchTo = true
@@ -38,7 +38,7 @@ SWEP.DrawAmmo = false
 
 SWEP.Base = "wepbase"
 
-SWEP.Primary.Sound = Sound("Weapon_XM1014.Single")
+SWEP.Primary.Sound = Sound("Weapon_SG552.Single")
 SWEP.Primary.ClipSize = 35
 SWEP.Primary.Ammo = "SMG1"
 SWEP.Primary.DefaultClip = -1
@@ -54,11 +54,36 @@ SWEP.CSMuzzleFlashes = true
 SWEP.DoesStuff = true
 
 function SWEP:PrimaryAttack()
-    self:EmitSound(self.Primary.Sound)
-    self:ShootBullet(10, 20, 0.2) --dmg, shots, spread
-    self:SetNextPrimaryFire( CurTime() + 0.5 )
     self.Owner:SetInvulnTimer(0)
+    self:SetNextPrimaryFire( CurTime() + 0.2 )
+    self:SetTriggerDownTime(0)
 end
 
 function SWEP:Reload()
+end
+
+function SWEP:Think()
+    if self:GetTriggerDownTime() ~= -1 then
+        local downTime = self:GetTriggerDownTime() + FrameTime()
+
+        if not self.Owner:KeyDown(IN_ATTACK) then
+            --TODO different sound for heavy attack, draw bigass tracer through the air
+            if downTime > 0.7 then
+                self:ShootBullet(50, 1, 0.001) --dmg, shots, spread
+            else
+                self:ShootBullet(20, 1, 0.03) --dmg, shots, spread
+            end
+            self:EmitSound(self.Primary.Sound)
+            self:SetTriggerDownTime(-1)
+        else
+            self:SetTriggerDownTime(downTime)
+        end
+    end
+
+end
+
+function SWEP:TranslateFOV(fov)
+    if self:GetTriggerDownTime() > 0.7 then
+        return fov/4
+    end
 end

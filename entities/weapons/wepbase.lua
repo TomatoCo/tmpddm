@@ -85,7 +85,7 @@ function SWEP:SetupDataTables()
 
    if SERVER then
         self:SetRoping(false)
-        self:SetRopeLength(0)
+        self:SetRopeLength(-1)
         self:SetRopeTarget(nil)
         self:SetRopedEnt(nil)
 
@@ -96,8 +96,8 @@ function SWEP:SetupDataTables()
 
         self:SetHasFinishedUnroping(false)
 
-        self:SetReloading(0)
-        self:SetTriggerDownTime(0)
+        self:SetReloading(-1)
+        self:SetTriggerDownTime(-1)
     end
 
 end
@@ -504,7 +504,7 @@ hook.Add("Move", "DoTheMoveful", function(ply, md)
 
     if wep.DoesStuff then
 
-        if (wep:GetReloading() > 0) then
+        if (wep:GetReloading() ~= -1) then
             PackUpWeapon(ply, wep)
         else
             Roping(ply, md, dt, wep)

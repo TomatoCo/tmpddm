@@ -7,7 +7,7 @@ local carrierIcon = Material("materials/pizza.png")
 local tr = {}
 local trace = {start = Vector(0,0,0), endpos = Vector(0,0,0), filter = LocalPlayer(), output = tr}
 
-local HASPIZZA = "You have the PIZZA!"
+local HASPIZZA = "You have the "
 
 local function drawIcon(ent, icon, texttop, textbottom)
     local pos = ent:GetPos()
@@ -52,12 +52,62 @@ local function drawIcon(ent, icon, texttop, textbottom)
         surface.SetTextPos(x2, y2)
         surface.DrawText(textbottom)
 
-
     end
 end
 
 local function convertDist(dist)
     return math.floor(dist / 52.5 + 0.5)
+end
+
+local function drawTarget(self)
+    local tr = util.GetPlayerTrace( LocalPlayer() )
+    local trace = util.TraceLine( tr )
+    if ( !trace.Hit ) then return end
+    if ( !trace.HitNonWorld ) then return end
+    
+    local text = "ERROR"
+    local font = "TargetID"
+    
+    if ( trace.Entity:IsPlayer() ) then
+        text = trace.Entity:Nick()
+    else
+        return
+        --text = trace.Entity:GetClass()
+    end
+    
+    surface.SetFont( font )
+    local w, h = surface.GetTextSize( text )
+    
+    local cx = ScrW() / 2
+    local cy = ScrH() / 2
+    
+    x = cx - w / 2
+    y = cy + 30
+    
+    -- The fonts internal drop shadow looks lousy with AA on
+    draw.SimpleText( text, font, x + 1, y + 1, Color( 0, 0, 0, 120 ) )
+    draw.SimpleText( text, font, x + 2, y + 2, Color( 0, 0, 0, 50 ) )
+    draw.SimpleText( text, font, x, y, self:GetTeamColor( trace.Entity ) )
+    
+    y = y + h + 5
+    
+    local text
+    local timeremaining = trace.Entity:GetInvulnTimer() - CurTime()
+    if timeremaining > 0 then
+        text = "INVULN: " .. math.floor(timeremaining*10)/10
+    else
+        text = trace.Entity:Health() .. "%"
+    end
+
+    local font = "TargetIDSmall"
+    
+    surface.SetFont( font )
+    local w, h = surface.GetTextSize( text )
+    local x = cx - w / 2
+    
+    draw.SimpleText( text, font, x + 1, y + 1, Color( 0, 0, 0, 120 ) )
+    draw.SimpleText( text, font, x + 2, y + 2, Color( 0, 0, 0, 50 ) )
+    draw.SimpleText( text, font, x, y, self:GetTeamColor( trace.Entity ) )
 end
 
 
@@ -111,7 +161,7 @@ function GM:HUDPaint()
     if LocalPlayer():GetHasPizza() then
         destText = "GOAL"
         local w,h = surface.GetTextSize(HASPIZZA)
-        local x = ScrW()/2 - w/2
+        local x = ScrW()/2 - w/2 - 32
         local y = ScrH()/2 + ScrH()/10 - h/2
         surface.SetTextColor(0,0,0,255)
         surface.SetTextPos(x+1, y+1)
@@ -119,6 +169,10 @@ function GM:HUDPaint()
         surface.SetTextColor(255,255,255,255)
         surface.SetTextPos(x, y)
         surface.DrawText(HASPIZZA)
+
+        surface.SetMaterial(carrierIcon)
+        surface.SetDrawColor(255,255,255,225)
+        surface.DrawTexturedRect(ScrW()/2 + w/2 - 32, y + h/2 - 32, 64, 64)
 
         --TODO draw shit on screen
     else
@@ -149,9 +203,8 @@ function GM:HUDPaint()
         end
     end
 
-    -- draw pizzas
-    -- pizza pointing up for pickup. pizza pointing down for dropoff. full pie for who currently has it.
-    -- also do speed meter and indicator for score.
+    drawTarget(self)
+    -- also do speed meter
 end
 
 
