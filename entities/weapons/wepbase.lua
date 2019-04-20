@@ -85,7 +85,7 @@ function SWEP:SetupDataTables()
 
    if SERVER then
         self:SetRoping(false)
-        self:SetRopeLength(0)
+        self:SetRopeLength(-1)
         self:SetRopeTarget(nil)
         self:SetRopedEnt(nil)
 
@@ -96,17 +96,16 @@ function SWEP:SetupDataTables()
 
         self:SetHasFinishedUnroping(false)
 
-        self:SetReloading(0)
-        self:SetTriggerDownTime(0)
+        self:SetReloading(-1)
+        self:SetTriggerDownTime(-1)
     end
 
 end
 
 
-local matBeam = Material( "cable/rope" )
+local matBeamCache = {}
 local ca = Color(255,255,255,255)
 hook.Add("PostDrawTranslucentRenderables", "TF_Roping", function()
-    render.SetMaterial( matBeam )
     for k,v in pairs(player.GetAll()) do
         local wep = v:GetActiveWeapon()
         if wep.DoesStuff then
@@ -119,11 +118,25 @@ hook.Add("PostDrawTranslucentRenderables", "TF_Roping", function()
 
                     local texStart = texOffset*-0.4
                     local texEnd = texOffset*-0.4 + startPos:Distance(endPos) / 256
+
+                    local matIndex = v:GetRopeIndex()
+                    local matField = ROPE_LIST[matIndex]
+                    if matField == nil then
+                        matIndex = 1
+                        matField = ROPE_LIST[matIndex]
+                    end
+                    local mat = matBeamCache[matIndex]
+                    if mat == nil then
+                        mat = Material( matField[2] )
+                        matBeamCache[matIndex] = mat
+                    end
+
+                    render.SetMaterial( mat )
                     render.DrawBeam(startPos, endPos, 2, texStart, texEnd, ca)
                 end
             end
         end
-        end
+    end
 end)
 
 local boostSounds = {"player/suit_sprint.wav"}
@@ -337,8 +350,7 @@ local function Roping(ply, md, dt, wep)
 
                 local ropeForce
                 local strength = (stretch - ropeLength)
-                if tensionVelMag < 0 then
-                    --TODO what does this do?
+                if tensionVelMag < 0 then --TODO what does this do? Adds a little more force when moving away from the rope
                     ropeForce = tensionDir * ((tensionVelMag * -1.25) + strength)
                 else
                     ropeForce = tensionDir * strength
@@ -492,7 +504,7 @@ hook.Add("Move", "DoTheMoveful", function(ply, md)
 
     if wep.DoesStuff then
 
-        if (wep:GetReloading() > 0) then
+        if (wep:GetReloading() ~= -1) then
             PackUpWeapon(ply, wep)
         else
             Roping(ply, md, dt, wep)
