@@ -34,6 +34,9 @@ function ENT:StartTouch(ent)
                 end
             end
             if SERVER then
+                if IsValid(ent.smoketrail) then
+                    ent.smoketrail:Remove()
+                end
                 GAMEMODE:SpawnPizza()
                 self:Remove()
             end

@@ -236,9 +236,11 @@ end
 local function dropPizza(ply)
     print("Spawning dead drop")
     if IsValid(ply) then
-        ply:SetHasPizza(false)
+        if IsValid(ent.smoketrail) then
+            ent.smoketrail:Remove()
+        end
 
-        util.BlastDamage(ply, ply, ply:GetPos(), 1, 1)
+        ply:SetHasPizza(false)
 
         local structure = ents.Create("tmpddm_pickup")
         structure:SetPos(ply:GetPos())

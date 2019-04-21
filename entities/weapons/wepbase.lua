@@ -348,13 +348,11 @@ local function Roping(ply, md, dt, wep)
 
                 local tensionVelMag = tensionDir:DotProduct(userVel)
 
-                local ropeForce
                 local strength = (stretch - ropeLength)
                 if tensionVelMag < 0 then --TODO what does this do? Adds a little more force when moving away from the rope
-                    ropeForce = tensionDir * ((tensionVelMag * -1.25) + strength)
-                else
-                    ropeForce = tensionDir * strength
+                    strength = strength + (tensionVelMag * -1.25)
                 end
+                local ropeForce = tensionDir * strength
 
                 if IsValid(physObj) then
                     local reactionForce = -1.0 * ropeCounterMass * ropeForce
