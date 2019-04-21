@@ -24,11 +24,10 @@ function ENT:StartTouch(ent)
     if ent:IsPlayer() then
         ent:SetHasPizza(true)
         ent:SetInvulnTimer(CurTime() + 2)
-        
 
         if SERVER then
             self:Remove()
-            local trail = util.SpriteTrail( ent, 0, Color(255,255,255,255), false, 64, 0, 5, 32, "trails/smoke" )
+            local trail = util.SpriteTrail( ent, 0, Color(255,255,255,255), false, 24, 8, 5, 1/16, "trails/laser" )
             ent.smoketrail = trail
         end
     end

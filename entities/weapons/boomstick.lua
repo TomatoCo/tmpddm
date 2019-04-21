@@ -1,6 +1,6 @@
 AddCSLuaFile( "shotgun.lua" )
 
-SWEP.PrintName = "SMG"
+SWEP.PrintName = "Rocket Lawnchair"
 
 SWEP.Author = "The guy who published"
 SWEP.Contact = "steam account"
@@ -14,8 +14,8 @@ SWEP.AdminSpawnable= true
 SWEP.AdminOnly = false
 
 SWEP.ViewModelFOV = 54
-SWEP.ViewModel = "models/weapons/cstrike/c_smg_p90.mdl"
-SWEP.WorldModel = "models/weapons/w_smg_p90.mdl"
+SWEP.ViewModel = "models/weapons/c_rpg.mdl"
+SWEP.WorldModel = "models/weapons/w_rocket_launcher.mdl"
 SWEP.ViewModelFlip = false
 
 SWEP.AutoSwitchTo = true
@@ -38,11 +38,11 @@ SWEP.DrawAmmo = false
 
 SWEP.Base = "wepbase"
 
-SWEP.Primary.Sound = Sound("Weapon_P90.Single")
-SWEP.Primary.ClipSize = 50
+SWEP.Primary.Sound = Sound("NPC_Helicopter.FireRocket")
+SWEP.Primary.ClipSize = 1
 SWEP.Primary.Ammo = "SMG1"
-SWEP.Primary.DefaultClip = 50
-SWEP.Primary.Automatic = true
+SWEP.Primary.DefaultClip = 1
+SWEP.Primary.Automatic = false
 
 SWEP.Secondary.ClipSize = 0
 SWEP.Secondary.DefaultClip = 0
@@ -63,9 +63,35 @@ function SWEP:PrimaryAttack()
     end
 
     self:EmitSound(self.Primary.Sound)
-    self:ShootBullet(15, 1, 0.04) --dmg, shots, spread
-    self:SetNextPrimaryFire( CurTime() + 0.09 )
+
+    self.Weapon:SendWeaponAnim(ACT_VM_PRIMARYATTACK)
+    self.Owner:SetAnimation(PLAYER_ATTACK1)
+
     self:TakePrimaryAmmo(1)
+
+    if SERVER then
+        local ent = ents.Create( "tmpddm_grenade" )
+
+        if ( !IsValid( ent ) ) then return end
+
+        ent:SetOwner(self.Owner)
+        ent.Owner = self.Owner
+
+        ent:SetPos( self.Owner:EyePos() + ( self.Owner:GetAimVector() * 16 ) )
+        ent:SetAngles( self.Owner:EyeAngles() )
+        ent:Spawn()
+
+        local phys = ent:GetPhysicsObject()
+        if ( !IsValid( phys ) ) then ent:Remove() return end
+
+        local velocity = self.Owner:GetAimVector()
+
+        phys:EnableDrag( false )
+        phys:EnableGravity( false)
+        phys:ApplyForceCenter((self.Owner:GetAimVector() * 10000) + self.Owner:GetVelocity())
+        phys:AddAngleVelocity(Vector(0,5000,0))
+    end
+
 end
 
 function SWEP:Reload()
@@ -81,7 +107,7 @@ function SWEP:Think()
     if self:GetReloading() ~= -1 then
         local newReloading = self:GetReloading() - FrameTime()
         if newReloading < 0 then
-            self.Weapon:SetClip1(50)
+            self.Weapon:SetClip1(1)
             self:SetReloading(-1)
         else
             self:SetReloading(newReloading)

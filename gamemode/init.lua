@@ -236,8 +236,8 @@ end
 local function dropPizza(ply)
     print("Spawning dead drop")
     if IsValid(ply) then
-        if IsValid(ent.smoketrail) then
-            ent.smoketrail:Remove()
+        if IsValid(ply.smoketrail) then
+            ply.smoketrail:Remove()
         end
 
         ply:SetHasPizza(false)
