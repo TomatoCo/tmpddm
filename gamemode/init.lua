@@ -10,7 +10,8 @@ include( "shared.lua" )
 
 function GM:InitPostEntity()
     print("init post entity")
-    self:SpawnPizza()
+    local pos = self:SpawnPizza("tmpddm_pickup", Vector(0,0,0))
+    self:SpawnPizza("tmpddm_dropoff", pos)
 end
 
 local PizzaPositions = {
@@ -153,35 +154,28 @@ local PizzaPositions = {
     Vector(-191.71980285645, 1641.5225830078, -11135.96875)
 }
 
-function GM:SpawnPizza(suppressDropoff)
+local function FindSpot(pos)
+    local candidates = {}
 
-    local firstPos = PizzaPositions[math.random(#PizzaPositions)]
-    print("Spawning pickup " .. tostring(firstPos))
-
-    local structure = ents.Create("tmpddm_pickup")
-    structure:SetPos(firstPos)
-    structure:Spawn()
-
-    if not suppressDropoff then
-
-        local candidates = {}
-
-        for i=1,5 do
-            candidates[i] = PizzaPositions[math.random(#PizzaPositions)]
-        end
-
-        table.sort(candidates, function(a,b) return a:DistToSqr(firstPos) < b:DistToSqr(firstPos) end)
-
-        local secondPos = candidates[3]
-        print("Spawning dropoff " .. tostring(secondPos))
-
-        structure = ents.Create("tmpddm_dropoff")
-        structure:SetPos(secondPos)
-        structure:Spawn()
-
+    for i=1,5 do
+        candidates[i] = PizzaPositions[math.random(#PizzaPositions)]
     end
 
+    table.sort(candidates, function(a,b) return a:DistToSqr(pos) < b:DistToSqr(pos) end)
+
+    return candidates[3]
 end
+
+function GM:SpawnPizza(pizza, pos)
+    local newpos = FindSpot(pos)
+
+    local structure = ents.Create(pizza)
+    structure:SetPos(newpos)
+    structure:Spawn()
+
+    return newpos, pizza
+end
+
 
 function GM:PlayerLoadout(ply)
 
@@ -245,7 +239,8 @@ local function dropPizza(ply)
         local structure = ents.Create("tmpddm_pickup")
         structure:SetPos(ply:GetPos())
         structure:Spawn()
-        structure:StartDrop()
+        
+        timer.Simple(1, function() if IsValid(structure) then structure:StartDrop() end end)
     end
 end
 
@@ -274,4 +269,8 @@ function GM:PlayerSetHandsModel( ply, ent )
         ent:SetBodyGroups( info.body )
     end
 
+end
+
+function GM:GetFallDamage(ply, speed)
+    return 0
 end

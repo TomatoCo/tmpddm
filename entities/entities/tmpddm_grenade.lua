@@ -18,7 +18,6 @@ if SERVER then
         if (phys:IsValid()) then
             phys:Wake()
         end
-        self.Owner = self.Entity
         
         self.radius = 200
         self.damage = 150

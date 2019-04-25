@@ -43,7 +43,7 @@ if CLIENT then
     Quote Raimi Spiderman as much as possible.
     ]]
 
-    local contact = "Join our discord. Ask for TomatoSoup. Leave feedback. https://discord.gg/xUWv7pH"
+    local contact = "Join our discord. Ask for TomatoSoup. Leave feedback. https://discord.gg/2zA2kxV"
 
     function TMPDDM_MOTD()
 

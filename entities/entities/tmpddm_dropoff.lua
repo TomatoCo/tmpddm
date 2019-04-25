@@ -37,7 +37,8 @@ function ENT:StartTouch(ent)
                 if IsValid(ent.smoketrail) then
                     ent.smoketrail:Remove()
                 end
-                GAMEMODE:SpawnPizza()
+                local pos = GAMEMODE:SpawnPizza("tmpddm_pickup", ent:GetPos())
+                GAMEMODE:SpawnPizza("tmpddm_dropoff", pos)
                 self:Remove()
             end
         end

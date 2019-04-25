@@ -19,27 +19,31 @@ function GM:ScalePlayerDamage( ply, hitgroup, dmginfo )
 
     local scale = 1
 
-    if not (ply:GetHasPizza() or (IsValid(attacker) and attacker:GetHasPizza())) then
-        scale = scale * 0.5
-    end
+    if attacker ~= ply then
 
-    if ply:GetInvulnTimer() > CurTime() then
-        scale = scale * 0
-    end
+        if not (ply:GetHasPizza() or (IsValid(attacker) and attacker:GetHasPizza())) then
+            scale = scale * 0.5
+        end
 
-    if ( hitgroup == HITGROUP_HEAD ) then
+        if ply:GetInvulnTimer() > CurTime() then
+            scale = scale * 0
+        end
 
-        scale = scale * 2
+        if ( hitgroup == HITGROUP_HEAD ) then
 
-    end
+            scale = scale * 2
 
-    if ( hitgroup == HITGROUP_LEFTARM or
-         hitgroup == HITGROUP_RIGHTARM or
-         hitgroup == HITGROUP_LEFTLEG or
-         hitgroup == HITGROUP_RIGHTLEG or
-         hitgroup == HITGROUP_GEAR ) then
+        end
 
-        scale = scale * 0.25
+        if ( hitgroup == HITGROUP_LEFTARM or
+             hitgroup == HITGROUP_RIGHTARM or
+             hitgroup == HITGROUP_LEFTLEG or
+             hitgroup == HITGROUP_RIGHTLEG or
+             hitgroup == HITGROUP_GEAR ) then
+
+            scale = scale * 0.25
+        end
+
     end
 
     dmginfo:ScaleDamage( scale )

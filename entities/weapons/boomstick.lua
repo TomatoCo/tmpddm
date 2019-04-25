@@ -57,7 +57,7 @@ function SWEP:PrimaryAttack()
     self.Owner:SetInvulnTimer(0)
 
     if self.Weapon:Clip1() <= 0 or self:GetReloading() ~= -1 then
-        self:EmitSound( "Weapon_Pistol.Empty" )
+        self:EmitSound( self.Primary.EmptySound )
         self:SetNextPrimaryFire( CurTime() + 0.2 )
         return
     end

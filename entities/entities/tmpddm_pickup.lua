@@ -12,11 +12,20 @@ function ENT:Initialize()
     self.falling = false
     self.startpos = self:GetPos()
     self.endpos = Vector(0,0,0)
-    self.fallspeed = 0
-    self.falllerp = 0
+    self.fallend = 0
+    self:SetRespawnTime(-1)
 
     if SERVER then
         self:SetTrigger(true)
+    end
+
+end
+
+function ENT:SetupDataTables()
+    self:NetworkVar("Float", 0, "RespawnTime")
+
+    if SERVER then
+        self:SetRespawnTime(-1)
     end
 end
 
@@ -34,15 +43,30 @@ function ENT:StartTouch(ent)
 end
 
 function ENT:StartDrop()
-    local res = util.TraceLine({start = self.startpos, endpos = self.startpos - Vector(0,0,2^16)})
+    local res = util.TraceLine({start = self.startpos, endpos = self.startpos - Vector(0,0,2^16), filter = self})
     self.endpos = (res.HitPos + self.startpos)/2
-    self.fallspeed = 30/(self.endpos:Length())
     self.falling = true
+    self.fallend = CurTime() + 15
+    self:SetRespawnTime(CurTime() + 30)
 end
 
 function ENT:Think()
     if self.falling then
-        self.falllerp = math.min(1, self.falllerp + FrameTime()/30)
-        self:SetPos(self.startpos, self.endpos, self.falllerp)
+        self.falllerp = math.max(0, (self.fallend - CurTime())/15)
+        self:SetPos(LerpVector(1-self.falllerp, self.startpos, self.endpos))
+    end
+
+    if SERVER then
+        local respawnTime = self:GetRespawnTime()
+        if respawnTime ~= -1 and respawnTime < CurTime() then
+            local pos = Vector(0,0,0)
+            local num = 0
+            for k,v in pairs(player.GetAll()) do
+                pos = pos + v:GetPos()
+                num = num + 1
+            end
+            GAMEMODE:SpawnPizza("tmpddm_pickup", pos/num)
+            self:Remove()
+        end
     end
 end

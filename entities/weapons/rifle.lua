@@ -39,6 +39,7 @@ SWEP.DrawAmmo = false
 SWEP.Base = "wepbase"
 
 SWEP.Primary.Sound = Sound("Weapon_SG552.Single")
+SWEP.Primary.BigSound = Sound("Weapon_AWP.Single")
 SWEP.Primary.ClipSize = 35
 SWEP.Primary.Ammo = "SMG1"
 SWEP.Primary.DefaultClip = -1
@@ -55,7 +56,7 @@ SWEP.DoesStuff = true
 
 function SWEP:PrimaryAttack()
     self.Owner:SetInvulnTimer(0)
-    self:SetNextPrimaryFire( CurTime() + 0.2 )
+    self:SetNextPrimaryFire( CurTime() + 0.125 )
     self:SetTriggerDownTime(0)
 end
 
@@ -69,11 +70,24 @@ function SWEP:Think()
         if not self.Owner:KeyDown(IN_ATTACK) then
             --TODO different sound for heavy attack, draw bigass tracer through the air
             if downTime > 0.7 then
-                self:ShootBullet(50, 1, 0.001) --dmg, shots, spread
+                self:ShootBullet(50, 1, 0.000) --dmg, shots, spread
+                self:EmitSound(self.Primary.BigSound)
+
+                local start, endpos = self.Owner:GetShootPos(), self.Owner:GetEyeTrace().HitPos
+
+                local fx = EffectData()
+                fx:SetOrigin(start)
+                fx:SetStart(endpos)
+                util.Effect("smoketrail",fx)
+
+                fx:SetOrigin(endpos)
+                fx:SetStart(start)
+                util.Effect("smoketrail",fx)
+
             else
                 self:ShootBullet(20, 1, 0.03) --dmg, shots, spread
+                self:EmitSound(self.Primary.Sound)
             end
-            self:EmitSound(self.Primary.Sound)
             self:SetTriggerDownTime(-1)
         else
             self:SetTriggerDownTime(downTime)
@@ -86,4 +100,11 @@ function SWEP:TranslateFOV(fov)
     if self:GetTriggerDownTime() > 0.7 then
         return fov/4
     end
+end
+
+function SWEP:AdjustMouseSensitivity()
+    if self:GetTriggerDownTime() > 0.7 then
+        return 0.25
+    end
+    return 1
 end

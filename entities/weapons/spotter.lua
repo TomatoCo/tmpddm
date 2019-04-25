@@ -23,14 +23,34 @@ function SWEP:Think()
 end
 
 function SWEP:PrimaryAttack()
+    if self.Owner:KeyDown(IN_USE) then
+        self.posList[#self.posList+1] = self.Owner:GetPos()
+    else
+        trace.filter = self.Owner
+        trace.start = self.Owner:GetShootPos()
+        trace.endpos = trace.start + self.Owner:GetAimVector()*1e6
+        local tr = util.TraceLine(trace)
+        local realpos = tr.HitPos + (tr.HitNormal*32)
+        self.posList[#self.posList+1] = tr.HitPos
+    end
+end
+
+function SWEP:SecondaryAttack()
+
     trace.filter = self.Owner
     trace.start = self.Owner:GetShootPos()
     trace.endpos = trace.start + self.Owner:GetAimVector()*1e6
     local tr = util.TraceLine(trace)
-    local realpos = tr.HitPos + (tr.HitNormal*32)
-    self.posList[#self.posList+1] = tr.HitPos
-end
 
-function SWEP:SecondaryAttack()
+    local closest = 1
+    local dist = 2^52
+    for i,v in ipairs(self.posList) do
+        local d = self.posList[closest]:Distance(v)
+        if d <= dist then
+            closest = i
+            dist = d
+        end
+    end
+    self.posList[closest] = self.posList[#self.posList]
     self.posList[#self.posList] = nil
 end

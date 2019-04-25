@@ -39,6 +39,7 @@ SWEP.DrawAmmo = false
 SWEP.Base = "weapon_base"
 
 SWEP.Primary.Sound = Sound("Weapon_XM1014.Single")
+SWEP.Primary.EmptySound = Sound("Weapon_Pistol.Empty")
 SWEP.Primary.ClipSize = 35
 SWEP.Primary.Ammo = "SMG1"
 SWEP.Primary.DefaultClip = -1
