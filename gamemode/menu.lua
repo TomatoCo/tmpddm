@@ -2,7 +2,8 @@ WEAPON_LIST = {
     {"models/weapons/w_shot_xm1014.mdl", "shotgun", "Shotgun", "Semi shotgun. No reloading."},
     {"models/weapons/w_smg_p90.mdl", "smg", "Submachine Gun", "High capacity SMG. Can't maneuver when reloading."},
     {"models/weapons/w_rif_sg552.mdl", "rifle", "Rifle", "Semi rifle. Hold to charge and zoom. No reloading."},
-    {"models/weapons/w_rocket_launcher.mdl", "boomstick", "Rocket Launcher", "Rocket Launcher. Can't maneuver when reloading."}
+    {"models/weapons/w_rocket_launcher.mdl", "boomstick", "Rocket Launcher", "Rocket Launcher. Can't maneuver when reloading."},
+    {"models/weapons/w_pist_deagle.mdl", "deagle", "Deagle", "IN PROGRESS. High power handgun. Can't maneuver when reloading."}
 }
 
 ROPE_LIST = {

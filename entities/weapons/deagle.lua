@@ -1,6 +1,6 @@
-AddCSLuaFile( "shotgun.lua" )
+AddCSLuaFile( "deagle.lua" )
 
-SWEP.PrintName = "SMG"
+SWEP.PrintName = "DEAGLE"
 
 SWEP.Author = "The guy who published"
 SWEP.Contact = "steam account"
@@ -14,8 +14,8 @@ SWEP.AdminSpawnable= true
 SWEP.AdminOnly = false
 
 SWEP.ViewModelFOV = 54
-SWEP.ViewModel = "models/weapons/cstrike/c_smg_p90.mdl"
-SWEP.WorldModel = "models/weapons/w_smg_p90.mdl"
+SWEP.ViewModel = "models/weapons/v_pist_deagle.mdl"
+SWEP.WorldModel = "models/weapons/w_pist_deagle.mdl"
 SWEP.ViewModelFlip = false
 
 SWEP.AutoSwitchTo = true
@@ -38,11 +38,11 @@ SWEP.DrawAmmo = false
 
 SWEP.Base = "wepbase"
 
-SWEP.Primary.Sound = Sound("Weapon_P90.Single")
-SWEP.Primary.ClipSize = 50
+SWEP.Primary.Sound = Sound("Weapon_DEagle.Single")
+SWEP.Primary.ClipSize = 7
 SWEP.Primary.Ammo = "SMG1"
-SWEP.Primary.DefaultClip = 50
-SWEP.Primary.Automatic = true
+SWEP.Primary.DefaultClip = 7
+SWEP.Primary.Automatic = false
 
 SWEP.Secondary.ClipSize = 0
 SWEP.Secondary.DefaultClip = 0
@@ -63,8 +63,8 @@ function SWEP:PrimaryAttack()
     end
 
     self:EmitSound(self.Primary.Sound)
-    self:ShootBullet(15, 1, 0.04) --dmg, shots, spread
-    self:SetNextPrimaryFire( CurTime() + 0.08 )
+    self:ShootBullet(50, 1, 0.04) --dmg, shots, spread
+    self:SetNextPrimaryFire( CurTime() + 0.1 )
     self:TakePrimaryAmmo(1)
 end
 
@@ -83,7 +83,7 @@ function SWEP:Think()
     if self:GetReloading() ~= -1 then
         local newReloading = self:GetReloading() - FrameTime()
         if newReloading < 0 then
-            self.Weapon:SetClip1(50)
+            self.Weapon:SetClip1(7)
             self:SetReloading(-1)
         else
             self:SetReloading(newReloading)

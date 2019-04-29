@@ -1,4 +1,4 @@
-AddCSLuaFile( "shotgun.lua" )
+AddCSLuaFile( "boomstick.lua" )
 
 SWEP.PrintName = "Rocket Lawnchair"
 
@@ -95,12 +95,14 @@ function SWEP:PrimaryAttack()
 end
 
 function SWEP:Reload()
-    self.Owner:SetAnimation( PLAYER_RELOAD )
+    if self:GetReloading() == -1 then
+        self.Owner:SetAnimation( PLAYER_RELOAD )
 
-    self.Weapon:SendWeaponAnim(ACT_VM_RELOAD)
+        self.Weapon:SendWeaponAnim(ACT_VM_RELOAD)
 
-    local runtime = self.Weapon:SequenceDuration(self.Owner:GetViewModel():GetSequence())
-    self:SetReloading(runtime)
+        local runtime = self.Weapon:SequenceDuration(self.Owner:GetViewModel():GetSequence())
+        self:SetReloading(runtime)
+    end
 end
 
 function SWEP:Think()

@@ -1,4 +1,4 @@
-AddCSLuaFile( "shotgun.lua" )
+AddCSLuaFile( "rifle.lua" )
 
 SWEP.PrintName = "Rifle"
 
@@ -70,7 +70,7 @@ function SWEP:Think()
         if not self.Owner:KeyDown(IN_ATTACK) then
             --TODO different sound for heavy attack, draw bigass tracer through the air
             if downTime > 0.7 then
-                self:ShootBullet(50, 1, 0.000) --dmg, shots, spread
+                self:ShootBullet(75, 1, 0.0) --dmg, shots, spread
                 self:EmitSound(self.Primary.BigSound)
 
                 local start, endpos = self.Owner:GetShootPos(), self.Owner:GetEyeTrace().HitPos
@@ -85,7 +85,7 @@ function SWEP:Think()
                 util.Effect("smoketrail",fx)
 
             else
-                self:ShootBullet(20, 1, 0.03) --dmg, shots, spread
+                self:ShootBullet(25, 1, 0.03) --dmg, shots, spread
                 self:EmitSound(self.Primary.Sound)
             end
             self:SetTriggerDownTime(-1)

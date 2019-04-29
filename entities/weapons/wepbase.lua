@@ -55,7 +55,7 @@ SWEP.CSMuzzleFlashes = true
 SWEP.DoesStuff = true
 
 function SWEP:PrimaryAttack()
-    self:EmitSound(Sound(self.Primary.Sound))
+    self:EmitSound(self.Primary.Sound)
     self:ShootBullet(15, 12, 0.15) --dmg, shots, spread
     self:SetNextPrimaryFire( CurTime() + 0.5 )
     self.Owner:SetInvulnTimer(0)
@@ -381,7 +381,6 @@ local function WallRunning(ply, md, dt, wep)
             end
 
             local dir
-            local start = (ply:GetShootPos() + ply:GetPos())/2
 
             if wep:GetWallRunning() then
                 dir = wep:GetWallDir()
@@ -395,28 +394,33 @@ local function WallRunning(ply, md, dt, wep)
             end
 
             if dir then
+                local start = (ply:GetShootPos() + ply:GetPos())/2
                 local tr = util.TraceLine({start = start, endpos = start + dir*32, filter = ply})
 
                 if tr.Hit and not tr.HitSky then
-                    dir = tr.HitNormal*-1
+                    dir = tr.HitNormal * -1
                     wep:SetWallDir(dir)
                     wep:SetWallRunning(true)
 
                     local vel = md:GetVelocity()
-                    dir.z = 0
-                    if (vel.x^2 + vel.y^2) > vel.z^2 then
-                        vel = vel + dir*600*dt
-                    end
+
                     local eyeVec = eyeAngs:Forward()
                     if (bit.band(buttons, IN_FORWARD) ~= 0) then
-                        local horizontalEyeVec = eyeAngs:Forward()
-                        horizontalEyeVec.z = 0
-                        vel = vel + horizontalEyeVec*240*dt
+                        local x = math.max(0, vel:Length() * vel:GetNormalized():Dot(eyeVec))
+                        local speed = 200 + (400 / (1 + math.exp((x - 1000)/200)))
+
+                        local accel = eyeVec*speed
+                        accel.z = 0
+
+                        vel = vel + accel*dt
                     end
-                    if vel:GetNormal().z < eyeVec.z and vel.z <= 50 then
+                    if vel:GetNormal().z < eyeVec.z and vel.z < 50 then
                         playRandomWallrunSound(ply, tr)
                         vel = vel + Vector(0,0,200)
                     end
+
+                    vel = vel + dir*600*dt
+
                     md:SetVelocity(vel)
                     return
                 end

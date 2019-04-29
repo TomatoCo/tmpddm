@@ -1,6 +1,11 @@
 AddCSLuaFile()
 ENT.Type = "anim"
 
+local explodeSounds = {}
+for i = 3,5 do
+    explodeSounds[#explodeSounds+1] = Sound("weapons/hegrenade/explode"..i..".wav")
+end
+
 if SERVER then
 
     function ENT:Initialize()
@@ -19,27 +24,28 @@ if SERVER then
             phys:Wake()
         end
         
+        self.hasexploded = false
         self.radius = 200
         self.damage = 150
     end
 
     function ENT:Explode()
+        if self.hasexploded then return end
+        self.hasexploded = true
+
         local pos = self.Entity:GetPos()
         
-        self.Entity:EmitSound(Sound("weapons/hegrenade/explode"..math.random(3,5)..".wav"))
+        self.Entity:EmitSound(explodeSounds[math.random(#explodeSounds)])
         
         util.BlastDamage( self.Entity, self.Owner, pos, self.radius, self.damage )
         
         local effectdata = EffectData()
         effectdata:SetOrigin( pos )
         util.Effect( "Explosion", effectdata, true, true )
-        
-        self.Entity:Remove()
+
+        timer.Simple(0, function() self.Entity:Remove() end)
     end
 
-    /*---------------------------------------------------------
-       Name: Touch
-    ---------------------------------------------------------*/
     function ENT:Touch( entity )
         if (entity:IsPlayer() or entity:IsVehicle()) then
             self:Explode()
