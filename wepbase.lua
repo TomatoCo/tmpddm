@@ -39,7 +39,6 @@ SWEP.DrawAmmo = false
 SWEP.Base = "weapon_base"
 
 SWEP.Primary.Sound = Sound("Weapon_XM1014.Single")
-SWEP.Primary.EmptySound = Sound("Weapon_Pistol.Empty")
 SWEP.Primary.ClipSize = 35
 SWEP.Primary.Ammo = "SMG1"
 SWEP.Primary.DefaultClip = -1
@@ -55,10 +54,9 @@ SWEP.CSMuzzleFlashes = true
 SWEP.DoesStuff = true
 
 function SWEP:PrimaryAttack()
-    self:EmitSound(self.Primary.Sound)
-    self:ShootBullet(15, 12, 0.15) --dmg, shots, spread
-    self:SetNextPrimaryFire( CurTime() + 0.5 )
-    self.Owner:SetInvulnTimer(0)
+    self:EmitSound(Sound(self.Primary.Sound))
+    self:ShootBullet(15, 20, 0.1)
+    self:SetNextPrimaryFire( CurTime() + 0.2 )
 end
 
 function SWEP:Reload()
@@ -81,32 +79,31 @@ function SWEP:SetupDataTables()
 
     self:NetworkVar( "Bool", 3, "HasFinishedUnroping")
 
-    self:NetworkVar( "Float", 1, "Reloading")
-    self:NetworkVar( "Float", 2, "TriggerDownTime")
-
    if SERVER then
         self:SetRoping(false)
-        self:SetRopeLength(-1)
+        self:SetRopeLength(0)
         self:SetRopeTarget(nil)
         self:SetRopedEnt(nil)
 
-        self:SetDoubleJumped(true)
+        self:SetDoubleJumped(false)
 
         self:SetWallRunning(false)
         self:SetWallDir(Vector(0,0,0))
 
         self:SetHasFinishedUnroping(false)
-
-        self:SetReloading(-1)
-        self:SetTriggerDownTime(-1)
+        --to add,
+        --ints: titan health, shield, energy, heat, corresponding maxes.
+        --floats: possibly 3-4 for the other titan special cooldowns? plus one for the ult meter.
+        --bools: titan doomed
     end
 
 end
 
 
-local matBeamCache = {}
+local matBeam = Material( "cable/cable_metalwinch01" )
 local ca = Color(255,255,255,255)
 hook.Add("PostDrawTranslucentRenderables", "TF_Roping", function()
+    render.SetMaterial( matBeam )
     for k,v in pairs(player.GetAll()) do
         local wep = v:GetActiveWeapon()
         if wep.DoesStuff then
@@ -119,43 +116,45 @@ hook.Add("PostDrawTranslucentRenderables", "TF_Roping", function()
 
                     local texStart = texOffset*-0.4
                     local texEnd = texOffset*-0.4 + startPos:Distance(endPos) / 256
-
-                    local matIndex = v:GetRopeIndex()
-                    local matField = ROPE_LIST[matIndex]
-                    if matField == nil then
-                        matIndex = 1
-                        matField = ROPE_LIST[matIndex]
-                    end
-                    local mat = matBeamCache[matIndex]
-                    if mat == nil then
-                        mat = Material( matField[2] )
-                        matBeamCache[matIndex] = mat
-                    end
-
-                    render.SetMaterial( mat )
                     render.DrawBeam(startPos, endPos, 2, texStart, texEnd, ca)
                 end
             end
         end
-    end
+        end
 end)
+
+local boostSounds = {"player/suit_sprint.wav"}
+local matToType = {MAT_CONCRETE = "other", MAT_DIRT = "soft", MAT_METAL = "metal", MAT_WOOD = "wood"}
+local stringToType = {wood = "wood", concrete = "other", metal = "metal", wood = "wood"}
+local wallStepSounds = {
+    other = {"player/footsteps/concrete1.wav","player/footsteps/concrete2.wav","player/footsteps/concrete3.wav","player/footsteps/concrete4.wav"},
+    soft = {"player/footsteps/dirt1.wav","player/footsteps/dirt2.wav","player/footsteps/dirt3.wav","player/footsteps/dirt4.wav"},
+    wood = {"player/footsteps/wood1.wav","player/footsteps/wood2.wav","player/footsteps/wood3.wav","player/footsteps/wood4.wav",},
+    metal = {"player/footsteps/metal1.wav","player/footsteps/metal2.wav","player/footsteps/metal3.wav","player/footsteps/metal4.wav",}
+}
+
 
 if SERVER then
     util.AddNetworkString( "TF_SoundEffects" )
 end
 
 local function SafePlaySound(ply, sound)
-    if CLIENT and IsFirstTimePredicted() then
-        ply:EmitSound(sound)
-    end
-    if SERVER then
-        local rf = RecipientFilter()
-        rf:AddPAS(ply:GetPos())
-        rf:RemovePlayer(ply)
-        net.Start("TF_SoundEffects")
-            net.WriteEntity(ply)
-            net.WriteString(sound)
-        net.Send(rf)
+    if SERVER or (CLIENT and IsFirstTimePredicted()) then
+        --if SERVER then
+        --    SuppressHostEvents(ent) --SuppressHostEvents doesn't work with emitsound?
+        --end
+        if CLIENT then
+            ply:EmitSound(sound)
+        end
+        if SERVER then
+            local rf = RecipientFilter()
+            rf:AddPAS(ply:GetPos())
+            rf:RemovePlayer(ply)
+            net.Start("TF_SoundEffects")
+                net.WriteEntity(ply)
+                net.WriteString(sound)
+            net.Send(rf)
+        end
     end
 end
 
@@ -169,24 +168,34 @@ if CLIENT then
     end)
 end
 
-local function WallrunSound(ply, tr)
+local function playRandomWallrunSound(ply, tr)
     if tr.Hit then
-        local surfaceId = tr.SurfaceProps
-        local data = util.GetSurfaceData(surfaceId)
-        if data then
-            local left, right = data.stepLeftSound, data.stepRightSound
-            if left and right then
-                SafePlaySound(ply, math.random() > 0.5 and left or right)
-            elseif left then
-                SafePlaySound(ply, left)
-            elseif right then
-                SafePlaySound(ply, right)
+        local t
+        if matToType[tr.MatType] then
+            t = wallStepSounds[matToType[tr.MatType]]
+        else
+            for k,v in pairs(stringToType) do
+                if string.find(tr.HitTexture, k) then
+                    t = wallStepSounds[v]
+                    break
+                end
+            end
+            if not t then
+                for k,v in pairs(stringToType) do
+                    if IsValid(tr.Entity) then
+                        local m = tr.Entity:GetModel()
+                        if string.find(m,k) then
+                            t = wallStepSounds[v]
+                            break
+                        end
+                    end
+                end
             end
         end
+        t = t or wallStepSounds.other
+        SafePlaySound(ply, t[math.random(#t)])
     end
 end
-
-local boostSounds = {"player/suit_sprint.wav"}
 
 local ropeMinMass = 10
 local function TestCanRope(ply, wep)
@@ -298,12 +307,14 @@ local function Roping(ply, md, dt, wep)
             end
 
             if (bit.band(buttons, IN_SPEED) ~= 0) then
+                --TODO winch noise
                 local rewindLength
                 if ropeLength > (stretch+32) then
                     rewindLength = 600
                 else
                     rewindLength = 200
                 end
+                --TODO enhanced rope motor *1.5
                 ropeLength = math.max(32, ropeLength - rewindLength*dt)
                 wep:SetRopeLength(ropeLength)
             end
@@ -323,11 +334,14 @@ local function Roping(ply, md, dt, wep)
 
                 local tensionVelMag = tensionDir:DotProduct(userVel)
 
+                local ropeForce
                 local strength = (stretch - ropeLength)
                 if tensionVelMag < 0 then
-                    strength = strength + (tensionVelMag * -1.25) -- > -1 is mushy, < -2 is positive feedback.
+                    --TODO what does this do?
+                    ropeForce = tensionDir * ((tensionVelMag * -1.25) + strength)
+                else
+                    ropeForce = tensionDir * strength
                 end
-                local ropeForce = tensionDir * strength
 
                 if IsValid(physObj) then
                     local reactionForce = -1.0 * ropeCounterMass * ropeForce
@@ -355,6 +369,7 @@ local function WallRunning(ply, md, dt, wep)
             end
 
             local dir
+            local start = (ply:GetShootPos() + ply:GetPos())/2
 
             if wep:GetWallRunning() then
                 dir = wep:GetWallDir()
@@ -368,33 +383,28 @@ local function WallRunning(ply, md, dt, wep)
             end
 
             if dir then
-                local start = (ply:GetShootPos() + ply:GetPos())/2
                 local tr = util.TraceLine({start = start, endpos = start + dir*32, filter = ply})
 
                 if tr.Hit and not tr.HitSky then
-                    dir = tr.HitNormal * -1
+                    dir = tr.HitNormal*-1
                     wep:SetWallDir(dir)
                     wep:SetWallRunning(true)
 
                     local vel = md:GetVelocity()
-
+                    dir.z = 0
+                    if (vel.x^2 + vel.y^2) > vel.z^2 then
+                        vel = vel + dir*600*dt
+                    end
                     local eyeVec = eyeAngs:Forward()
                     if (bit.band(buttons, IN_FORWARD) ~= 0) then
-                        local x = math.max(0, vel:Length() * vel:GetNormalized():Dot(eyeVec))
-                        local speed = 200 + (400 / (1 + math.exp((x - 1000)/200)))
-
-                        local accel = eyeVec*speed
-                        accel.z = 0
-
-                        vel = vel + accel*dt
+                        local horizontalEyeVec = eyeAngs:Forward()
+                        horizontalEyeVec.z = 0
+                        vel = vel + horizontalEyeVec*240*dt
                     end
-                    if vel:GetNormal().z < eyeVec.z and vel.z < 50 then
-                        WallrunSound(ply, tr)
+                    if vel:GetNormal().z < eyeVec.z and vel.z <= 50 then
+                        playRandomWallrunSound(ply, tr)
                         vel = vel + Vector(0,0,200)
                     end
-
-                    vel = vel + dir*600*dt
-
                     md:SetVelocity(vel)
                     return
                 end
@@ -437,40 +447,33 @@ end
 
 
 local function SprintBoostJump(ply, md, dt, wep)
-    local buttons = md:GetButtons()
-    if bit.band( buttons, IN_JUMP ) ~= 0 and bit.band( md:GetOldButtons(), IN_JUMP ) == 0 and ply:OnGround() then
-        local forward = md:GetAngles()
-        forward.p = 0
-        forward = forward:Forward()
+    if true then  --TODO replace with a module?
+        local buttons = md:GetButtons()
+        if bit.band( buttons, IN_JUMP ) ~= 0 and bit.band( md:GetOldButtons(), IN_JUMP ) == 0 and ply:OnGround() then
+            local forward = md:GetAngles()
+            forward.p = 0
+            forward = forward:Forward()
 
-        local speedBoostPerc = ( ( not ply:Crouching() ) and 0.5 ) or 0.1
+            local speedBoostPerc = ( ( not ply:Crouching() ) and 0.5 ) or 0.1
 
-        local speedAddition = math.abs( md:GetForwardSpeed() * speedBoostPerc )
-        local maxSpeed = md:GetMaxSpeed() * ( 1 + speedBoostPerc )
-        local newSpeed = speedAddition + md:GetVelocity():Length2D()
+            local speedAddition = math.abs( md:GetForwardSpeed() * speedBoostPerc )
+            local maxSpeed = md:GetMaxSpeed() * ( 1 + speedBoostPerc )
+            local newSpeed = speedAddition + md:GetVelocity():Length2D()
 
-        -- Clamp it to make sure they can't bunnyhop to ludicrous speed
-        if newSpeed > maxSpeed then
-            speedAddition = speedAddition - (newSpeed - maxSpeed)
+            -- Clamp it to make sure they can't bunnyhop to ludicrous speed
+            if newSpeed > maxSpeed then
+                speedAddition = speedAddition - (newSpeed - maxSpeed)
+            end
+
+            -- Reverse it if the player is running backwards
+            if md:GetVelocity():Dot(forward) < 0 then
+                speedAddition = -speedAddition
+            end
+
+            -- Apply the speed boost
+            md:SetVelocity(forward * speedAddition + md:GetVelocity())
         end
-
-        -- Reverse it if the player is running backwards
-        if md:GetVelocity():Dot(forward) < 0 then
-            speedAddition = -speedAddition
-        end
-
-        -- Apply the speed boost
-        md:SetVelocity(forward * speedAddition + md:GetVelocity())
     end
-end
-
-local function PackUpWeapon(ply, wep)
-    if wep:GetRoping() then
-        RopeOff(ply, wep)
-    end
-    wep:SetWallDir(Vector(0,0,0))
-    wep:SetWallRunning(false)
-    wep:SetDoubleJumped(true)
 end
 
 hook.Add("Move", "DoTheMoveful", function(ply, md)
@@ -480,9 +483,13 @@ hook.Add("Move", "DoTheMoveful", function(ply, md)
     local wep = ply:GetActiveWeapon()
 
     if wep.DoesStuff then
-
-        if (wep:GetReloading() ~= -1) then
-            PackUpWeapon(ply, wep)
+        if not ply:Alive() then
+            if wep:GetRoping() then
+                RopeOff(ply, wep) --TODO need to get rid of the melon on death/holster/etc.
+            end
+            wep:SetWallDir(Vector(0,0,0))
+            wep:SetWallRunning(false)
+            wep:SetDoubleJumped(false)
         else
             Roping(ply, md, dt, wep)
             WallRunning(ply, md, dt, wep)
@@ -491,16 +498,6 @@ hook.Add("Move", "DoTheMoveful", function(ply, md)
         end
     end
 end)
-
-function SWEP:OnRemove()
-    PackUpWeapon(self.Owner, self)
-end
-function SWEP:Holster()
-    PackUpWeapon(self.Owner, self)
-end
-function SWEP:OnDrop()
-    PackUpWeapon(self.Owner, self)
-end
 
 
 if CLIENT then
@@ -516,12 +513,10 @@ if CLIENT then
         local wep = LocalPlayer():GetActiveWeapon()
         if wep.DoesStuff then
             local dt = FrameTime()*4
-
             if wep:GetWallRunning() then
                 wallDir = wep:GetWallDir()
                 wallMod = wallMod + dt
             else
-                --TODO trace in direction of travel, decide if about to run. 
                 wallMod = wallMod - dt
             end
 

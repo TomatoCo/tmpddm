@@ -10,7 +10,7 @@ include("player_ext.lua")
 include("menu.lua")
 
 function GM:Initialize()
-    -- Do stuff
+
 end
 
 function GM:ScalePlayerDamage( ply, hitgroup, dmginfo )
