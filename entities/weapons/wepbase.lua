@@ -1,5 +1,7 @@
 AddCSLuaFile( "wepbase.lua" )
 
+CreateConVar("tf_ropehold", 0, bit.bor(FCVAR_USERINFO, FCVAR_ARCHIVE))
+
 SWEP.PrintName = "LegendaryPOS"
 
 SWEP.Author = "The guy who published"
@@ -265,20 +267,35 @@ local ropeCounterMass = 60
 local ropePullback = 6
 --TODO roping on causes wild spaz sometimes? Seems to mostly be on super thin brushes.
 local function Roping(ply, md, dt, wep)
+    local holdToRope = ply:GetInfoNum("tf_ropehold", 0) > 0
     local buttons = md:GetButtons()
-    if (bit.band(buttons, IN_ATTACK2) ~= 0) then
-        if wep:GetRoping() then
-            if ((bit.band(md:GetOldButtons(), IN_ATTACK2)) == 0) then
-                RopeOff(ply, wep)
+    if holdToRope then
+        if (bit.band(buttons, IN_ATTACK2) ~= 0) then
+            if not wep:GetRoping() and wep:GetHasFinishedUnroping() then
+                RopeOn(ply, wep)
                 wep:SetHasFinishedUnroping(false)
             end
         else
-            if wep:GetHasFinishedUnroping() then
-                RopeOn(ply, wep)
+            if wep:GetRoping() then
+                RopeOff(ply, wep)
             end
+            wep:SetHasFinishedUnroping(true)
         end
     else
-        wep:SetHasFinishedUnroping(true)
+        if (bit.band(buttons, IN_ATTACK2) ~= 0) then
+            if wep:GetRoping() then
+                if ((bit.band(md:GetOldButtons(), IN_ATTACK2)) == 0) then
+                    RopeOff(ply, wep)
+                    wep:SetHasFinishedUnroping(false)
+                end
+            else
+                if wep:GetHasFinishedUnroping() then
+                    RopeOn(ply, wep)
+                end
+            end
+        else
+            wep:SetHasFinishedUnroping(true)
+        end
     end
 
     if wep:GetRoping() then

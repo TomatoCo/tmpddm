@@ -1,8 +1,126 @@
 include( "shared.lua" )
 
+CreateConVar("tf_highcontrastxhair", 0, bit.bor(FCVAR_USERINFO, FCVAR_ARCHIVE))
+
 local pickupIcon = Material("materials/pickup.png")
 local dropoffIcon = Material("materials/dropoff.png")
 local carrierIcon = Material("materials/pizza.png")
+
+
+local DontDraw = {
+    --CHudWeaponSelection = true,
+    --CHudHealth = true,
+    --CHudSecondaryAmmo = true,
+    --CHudAmmo = true,
+    CHudCrosshair = true,
+    --CHudBattery = true
+}
+
+function GM:HUDShouldDraw( name )
+    if DontDraw[name] then return false end
+    return true
+end
+
+local invertTab1 = {
+    [ "$pp_colour_addr" ] = 0.0,
+    [ "$pp_colour_addg" ] = 0.0,
+    [ "$pp_colour_addb" ] = 0.0,
+    [ "$pp_colour_brightness" ] = -1.0,
+    [ "$pp_colour_contrast" ] = -1.0,
+    [ "$pp_colour_colour" ] = -1.0,
+    [ "$pp_colour_mulr" ] = 0.0,
+    [ "$pp_colour_mulg" ] = 0.0,
+    [ "$pp_colour_mulb" ] = 0.0
+}
+
+local invertTab2 = {
+    [ "$pp_colour_addr" ] = 0.0,
+    [ "$pp_colour_addg" ] = 0.0,
+    [ "$pp_colour_addb" ] = 0.0,
+    [ "$pp_colour_brightness" ] = 0,
+    [ "$pp_colour_contrast" ] = 1,
+    [ "$pp_colour_colour" ] = -1.0,
+    [ "$pp_colour_mulr" ] = 0.0,
+    [ "$pp_colour_mulg" ] = 0.0,
+    [ "$pp_colour_mulb" ] = 0.0
+}
+
+local function drawCrosshair(ply)
+    local dir = ply:GetAimVector()
+    local startpos = ply:GetShootPos()
+    local endpos = startpos+(16384*dir)
+
+    dir = dir:Angle()
+
+    local middledist = 0.05
+
+    local xhairlen = 2
+
+    local invertColors = ply:GetInfoNum("tf_highcontrastxhair", 0)
+
+    if invertColors > 0 then
+        render.SetStencilWriteMask( 0xFF )
+        render.SetStencilTestMask( 0xFF )
+        render.ClearStencil()
+
+        render.SetStencilEnable( true )
+
+        render.SetStencilReferenceValue( 1 )
+
+        render.SetStencilCompareFunction( STENCIL_NEVER )
+        render.SetStencilPassOperation( STENCIL_KEEP )
+        render.SetStencilFailOperation( STENCIL_REPLACE )
+        render.SetStencilZFailOperation( STENCIL_KEEP )
+
+        surface.SetDrawColor(127, 127, 127, 1)
+        draw.NoTexture()
+    else
+        surface.SetDrawColor(255, 0, 0, 200)
+    end
+
+    local pos, x, y
+
+    pos = endpos + 16384*middledist*(dir:Right()) --right
+    pos = pos:ToScreen()
+    x,y = math.floor(pos.x+0.5),math.floor(pos.y+0.5)
+    surface.DrawLine(x, y, x+xhairlen*10, y)
+
+    pos = endpos - 16384*middledist*(dir:Right()) --left
+    pos = pos:ToScreen()
+    x, y = math.floor(pos.x+0.5),math.floor(pos.y+0.5)
+    surface.DrawLine(x, y, x-xhairlen*10, y)
+
+    pos = endpos + 16384*middledist*(dir:Up()) --up
+    pos = pos:ToScreen()
+    x, y = math.floor(pos.x+0.5),math.floor(pos.y+0.5)
+    surface.DrawLine(x, y, x, y-xhairlen*10)
+
+    pos = endpos - 16384*middledist*(dir:Up()) --down
+    pos = pos:ToScreen()
+    x, y = math.floor(pos.x+0.5),math.floor(pos.y+0.5)
+    surface.DrawLine(x, y, x, y+xhairlen*10)
+
+    surface.SetDrawColor(127, 127, 127, 127)
+    pos = endpos:ToScreen()
+    x, y = math.floor(pos.x+0.5),math.floor(pos.y+0.5)
+    surface.DrawRect(x - 1, y - 1, 3, 3)
+
+    if invertColors then
+
+        render.SetStencilCompareFunction( STENCIL_EQUAL )
+        render.SetStencilFailOperation( STENCIL_KEEP )
+
+        if (invertColors == 1 or invertColors == 3) then
+            DrawColorModify(invertTab1)
+        end        
+        if (invertColors == 2 or invertColors == 3) then
+            DrawColorModify(invertTab2)
+        end
+
+        render.SetStencilEnable( false )
+    end
+end
+
 
 local tr = {}
 local trace = {start = Vector(0,0,0), endpos = Vector(0,0,0), filter = LocalPlayer(), output = tr}
@@ -26,14 +144,14 @@ local function drawIcon(ent, icon, texttop, textbottom)
 
         local hx, hy = ScrW()/2, ScrH()/2
         local dist = math.sqrt((hx-x)^2 + (hy-y)^2)
-        local distAdjust = math.max(0,dist/(math.min(hx, hy)/10))
-        local realAlpha = Lerp(distAdjust, 100, alpha)
+        local distAdjust = math.max(0,dist/(math.min(hx, hy)/5))
+        local realAlpha = Lerp(distAdjust, 10, alpha)
 
         surface.SetMaterial(icon)
         surface.SetDrawColor(255,255,255,realAlpha)
         surface.DrawTexturedRect(x-32, y-32, 64, 64)
 
-        surface.SetFont( "Trebuchet24" )
+        surface.SetFont( "CloseCaption_Bold" )
 
         surface.SetTextPos(ScrW()/2, ScrH()/2)
         local w1, h1 = surface.GetTextSize(texttop)
@@ -129,7 +247,7 @@ function GM:HUDPaint()
         end
     end
 
-    surface.SetFont( "Trebuchet24" )
+    surface.SetFont( "CloseCaption_Bold" )
     surface.SetTextColor(0,0,0,255)
     surface.SetTextPos(1,1)
     local maxwidth = 0
@@ -156,6 +274,14 @@ function GM:HUDPaint()
         surface.DrawText(v)
         y = y + h
     end
+
+    surface.SetTextColor(0,0,0,255)
+    surface.SetTextPos(6,1)
+    surface.DrawText("Press F3 to re-open the menu")
+    surface.SetTextColor(255,255,255,255)
+    surface.SetTextPos(5,0)
+    surface.DrawText("Press F3 to re-open the menu")
+
 
     local destText = "Dropoff"
     if LocalPlayer():GetHasPizza() then
@@ -202,6 +328,8 @@ function GM:HUDPaint()
             end
         end
     end
+
+    drawCrosshair(LocalPlayer())
 
     drawTarget(self)
     -- also do speed meter
