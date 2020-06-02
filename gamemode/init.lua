@@ -8,41 +8,12 @@ AddCSLuaFile( "shared.lua" )
 
 include( "shared.lua" )
 
-local function PizzaSanityCheck()
-    local playerhas, pickup, dropoff
-    print("Checking sanity")
-    for _,v in pairs(player.GetAll()) do
-        if v:GetHasPizza() then 
-            print("player has")
-            playerhas = true 
-        end
-    end
-    for _,v in pairs(ents.GetAll()) do
-        if IsValid(v) then
-            local class = v:GetClass()
-            if class == "tmpddm_pickup" then
-                print("found pickup")
-                pickup = true
-            elseif class == "tmpddm_dropoff" then
-                print("found dropoff")
-                dropoff = true
-            end
-        end
-    end
-    return (playerhas or pickup) and dropoff
-end
-
-local function PizzaSanityCheckWrap()
-    PizzaSanityCheck()
-    timer.Simple(30, PizzaSanityCheckWrap)
-end
-
 function GM:InitPostEntity()
     print("init post entity")
     local pos = self:SpawnPizza("tmpddm_pickup", Vector(0,0,0))
     self:SpawnPizza("tmpddm_dropoff", pos)
-    PizzaSanityCheckWrap()
 end
+
 
 local PizzaPositions = {
     Vector(12817.874023438, -12499.059570313, -10867.107421875),
@@ -238,7 +209,7 @@ function GM:PlayerSetModel(ply)
 end
 
 function GM:PlayerInitialSpawn(ply)
-    ply:SendLua("timer.Simple(1, function() TMPDDM_MOTD() end)")
+    ply:SendLua("timer.Simple(0.0, function() TMPDDM_MOTD() end)")
 end
 function GM:ShowSpare1(ply)
     ply:SendLua("TMPDDM_MOTD()")

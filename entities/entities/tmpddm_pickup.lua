@@ -69,8 +69,8 @@ function ENT:Think()
                 pos = pos + v:GetPos()
                 num = num + 1
             end
-            GAMEMODE:SpawnPizza("tmpddm_pickup", pos/num)
             print("Dropped pizza spawning pizza")
+            GAMEMODE:SpawnPizza("tmpddm_pickup", pos/num)
             self:Remove()
         end
     end

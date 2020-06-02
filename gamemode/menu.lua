@@ -78,10 +78,10 @@ if CLIENT then
         ContactLabel:SetSize( 700, 280)
         ContactLabel:SetDark(true)
 
+
         local RopeHoldCheckbox = vgui.Create( "DCheckBoxLabel", InstructionPanel ) -- Create the checkbox
         RopeHoldCheckbox:SetPos( 5, 305+140 ) -- Set the position
         RopeHoldCheckbox:SetText("Hold to Rope?")
-        RopeHoldCheckbox:SetValue( LocalPlayer():GetInfoNum("tf_ropehold", 0) == 1 ) -- Initial "ticked" value
         RopeHoldCheckbox:SetDark(true)
         RopeHoldCheckbox.OnChange = function(self, bool)
             RunConsoleCommand("tf_ropehold", bool and 1 or 0)
@@ -90,11 +90,16 @@ if CLIENT then
         local HighContrastCheckbox = vgui.Create( "DCheckBoxLabel", InstructionPanel ) -- Create the checkbox
         HighContrastCheckbox:SetPos( 5, 320+140 ) -- Set the position
         HighContrastCheckbox:SetText("High Contrast Crosshair?")
-        HighContrastCheckbox:SetValue( LocalPlayer():GetInfoNum("tf_highcontrastxhair", 0) == 3 ) -- Initial "ticked" value
         HighContrastCheckbox:SetDark(true)
         HighContrastCheckbox.OnChange = function(self, bool)
             RunConsoleCommand("tf_highcontrastxhair", bool and 3 or 0)
         end
+        timer.Simple(0.0, function() --Why? Because LocalPlayer().GetInfoNum doesn't exist on the client in the first few millis.
+            if LocalPlayer() and LocalPlayer().GetInfoNum then
+                RopeHoldCheckbox:SetValue( LocalPlayer():GetInfoNum("tf_ropehold", 0) == 1 ) -- Initial "ticked" value
+                HighContrastCheckbox:SetValue( LocalPlayer():GetInfoNum("tf_highcontrastxhair", 0) == 3 ) -- Initial "ticked" value
+            end
+        end)
 
         local SelectPanel = vgui.Create( "DPanel", IntroFrame )
         SelectPanel:SetPos( 815, 30 )

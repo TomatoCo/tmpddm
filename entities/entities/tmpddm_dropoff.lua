@@ -41,9 +41,9 @@ function ENT:StartTouch(ent)
                 if IsValid(ent.smoketrail) then
                     ent.smoketrail:Remove()
                 end
+                print("Delivered pizza spawning pizza")
                 local pos = GAMEMODE:SpawnPizza("tmpddm_pickup", ent:GetPos())
                 GAMEMODE:SpawnPizza("tmpddm_dropoff", pos)
-                print("Delivered pizza spawning pizza")
                 self:Remove()
             end
         end

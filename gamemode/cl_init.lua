@@ -6,12 +6,6 @@ local pickupIcon = Material("materials/pickup.png")
 local dropoffIcon = Material("materials/dropoff.png")
 local carrierIcon = Material("materials/pizza.png")
 
-function GM:NotifyShouldTransmit(ent, shouldTransmit)
-    if ent:GetClass() == "tmpddm_pickup" or ent:GetClass() == "tmpddm_dropoff" then
-        ent:SetPredictable(true)
-    end
-end
-
 local DontDraw = {
     --CHudWeaponSelection = true,
     --CHudHealth = true,
