@@ -14,7 +14,7 @@ SWEP.AdminSpawnable= true
 SWEP.AdminOnly = false
 
 SWEP.ViewModelFOV = 54
-SWEP.ViewModel = "models/weapons/v_pist_deagle.mdl"
+SWEP.ViewModel = "models/weapons/cstrike/c_pist_deagle.mdl"
 SWEP.WorldModel = "models/weapons/w_pist_deagle.mdl"
 SWEP.ViewModelFlip = false
 
@@ -63,7 +63,7 @@ function SWEP:PrimaryAttack()
     end
 
     self:EmitSound(self.Primary.Sound)
-    self:ShootBullet(50, 1, 0.04) --dmg, shots, spread
+    self:ShootBullet(50, 1, 0.0) --dmg, shots, spread
     self:SetNextPrimaryFire( CurTime() + 0.1 )
     self:TakePrimaryAmmo(1)
 end

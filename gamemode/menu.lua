@@ -3,7 +3,7 @@ WEAPON_LIST = {
     {"models/weapons/w_smg_p90.mdl", "smg", "Submachine Gun", "High capacity SMG. Can't maneuver when reloading."},
     {"models/weapons/w_rif_sg552.mdl", "rifle", "Rifle", "Semi rifle. Hold to charge and zoom. No reloading."},
     {"models/weapons/w_rocket_launcher.mdl", "boomstick", "Rocket Launcher", "Rocket Launcher. Can't maneuver when reloading."},
-    {"models/weapons/w_pist_deagle.mdl", "deagle", "Deagle", "IN PROGRESS. High power handgun. Can't maneuver when reloading."}
+    {"models/weapons/w_pist_deagle.mdl", "deagle", "Deagle", "High power handgun. Run faster. Can't maneuver when reloading."}
 }
 
 ROPE_LIST = {
@@ -77,6 +77,24 @@ if CLIENT then
         ContactLabel:SetFont("Trebuchet18")
         ContactLabel:SetSize( 700, 280)
         ContactLabel:SetDark(true)
+
+        local RopeHoldCheckbox = vgui.Create( "DCheckBoxLabel", InstructionPanel ) -- Create the checkbox
+        RopeHoldCheckbox:SetPos( 5, 305+140 ) -- Set the position
+        RopeHoldCheckbox:SetText("Hold to Rope?")
+        RopeHoldCheckbox:SetValue( LocalPlayer():GetInfoNum("tf_ropehold", 0) == 1 ) -- Initial "ticked" value
+        RopeHoldCheckbox:SetDark(true)
+        RopeHoldCheckbox.OnChange = function(self, bool)
+            RunConsoleCommand("tf_ropehold", bool and 1 or 0)
+        end
+
+        local HighContrastCheckbox = vgui.Create( "DCheckBoxLabel", InstructionPanel ) -- Create the checkbox
+        HighContrastCheckbox:SetPos( 5, 320+140 ) -- Set the position
+        HighContrastCheckbox:SetText("High Contrast Crosshair?")
+        HighContrastCheckbox:SetValue( LocalPlayer():GetInfoNum("tf_highcontrastxhair", 0) == 3 ) -- Initial "ticked" value
+        HighContrastCheckbox:SetDark(true)
+        HighContrastCheckbox.OnChange = function(self, bool)
+            RunConsoleCommand("tf_highcontrastxhair", bool and 3 or 0)
+        end
 
         local SelectPanel = vgui.Create( "DPanel", IntroFrame )
         SelectPanel:SetPos( 815, 30 )

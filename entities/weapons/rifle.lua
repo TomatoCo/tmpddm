@@ -69,7 +69,7 @@ function SWEP:Think()
 
         if not self.Owner:KeyDown(IN_ATTACK) then
             --TODO different sound for heavy attack, draw bigass tracer through the air
-            if downTime > 0.7 then
+            if downTime > 0.5 then
                 self:ShootBullet(75, 1, 0.0) --dmg, shots, spread
                 self:EmitSound(self.Primary.BigSound)
 

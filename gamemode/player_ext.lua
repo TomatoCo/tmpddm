@@ -13,7 +13,7 @@ function meta:SetupDataTables()
     self:NetworkVar( "Int", 0, "Score")
     self:NetworkVar( "Float", 0, "InvulnTimer")
 
-    self:NetworkVar( "Int", 1, "RopeIndex")
+    self:NetworkVar( "Int", 1, "RopeIndex") --TODO is this necessary?
 
     
     if SERVER then

@@ -21,6 +21,10 @@ function ENT:Initialize()
 
 end
 
+function ENT:UpdateTransmitState()
+    return TRANSMIT_ALWAYS
+end
+
 function ENT:SetupDataTables()
     self:NetworkVar("Float", 0, "RespawnTime")
 
@@ -66,6 +70,7 @@ function ENT:Think()
                 num = num + 1
             end
             GAMEMODE:SpawnPizza("tmpddm_pickup", pos/num)
+            print("Dropped pizza spawning pizza")
             self:Remove()
         end
     end

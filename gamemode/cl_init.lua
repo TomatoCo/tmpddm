@@ -6,6 +6,11 @@ local pickupIcon = Material("materials/pickup.png")
 local dropoffIcon = Material("materials/dropoff.png")
 local carrierIcon = Material("materials/pizza.png")
 
+function GM:NotifyShouldTransmit(ent, shouldTransmit)
+    if ent:GetClass() == "tmpddm_pickup" or ent:GetClass() == "tmpddm_dropoff" then
+        ent:SetPredictable(true)
+    end
+end
 
 local DontDraw = {
     --CHudWeaponSelection = true,
@@ -277,7 +282,7 @@ function GM:HUDPaint()
 
     surface.SetTextColor(0,0,0,255)
     surface.SetTextPos(6,1)
-    surface.DrawText("Press F3 to re-open the menu")
+    surface.DrawText("Press F3 to re-open the menu") --gm_showspare1
     surface.SetTextColor(255,255,255,255)
     surface.SetTextPos(5,0)
     surface.DrawText("Press F3 to re-open the menu")

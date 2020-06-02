@@ -8,10 +8,40 @@ AddCSLuaFile( "shared.lua" )
 
 include( "shared.lua" )
 
+local function PizzaSanityCheck()
+    local playerhas, pickup, dropoff
+    print("Checking sanity")
+    for _,v in pairs(player.GetAll()) do
+        if v:GetHasPizza() then 
+            print("player has")
+            playerhas = true 
+        end
+    end
+    for _,v in pairs(ents.GetAll()) do
+        if IsValid(v) then
+            local class = v:GetClass()
+            if class == "tmpddm_pickup" then
+                print("found pickup")
+                pickup = true
+            elseif class == "tmpddm_dropoff" then
+                print("found dropoff")
+                dropoff = true
+            end
+        end
+    end
+    return (playerhas or pickup) and dropoff
+end
+
+local function PizzaSanityCheckWrap()
+    PizzaSanityCheck()
+    timer.Simple(30, PizzaSanityCheckWrap)
+end
+
 function GM:InitPostEntity()
     print("init post entity")
     local pos = self:SpawnPizza("tmpddm_pickup", Vector(0,0,0))
     self:SpawnPizza("tmpddm_dropoff", pos)
+    PizzaSanityCheckWrap()
 end
 
 local PizzaPositions = {
@@ -36,8 +66,8 @@ local PizzaPositions = {
     Vector(9243.5791015625, 1858.7528076172, -10760.3125),
     Vector(13223.205078125, 4937.7978515625, -10678.93359375),
     Vector(11117.633789063, 5975.494140625, -10781.6953125),
-    Vector(9171.94921875, 10070.904296875, -10895.96875),
-    Vector(9218.431640625, 10323.9453125, -11007.96875),
+    Vector(9171.94921875, 10070.904296875, -10895.96875), --waste facility
+    Vector(9218.431640625, 10323.9453125, -11007.96875), --waste facility
     Vector(1969.5618896484, 7648.0512695313, -9727.96875),
     Vector(1370.4016113281, 7834.4438476563, -9215.96875),
     Vector(544.36920166016, 8373.2001953125, -9087.96875),
@@ -172,6 +202,7 @@ function GM:SpawnPizza(pizza, pos)
     local structure = ents.Create(pizza)
     structure:SetPos(newpos)
     structure:Spawn()
+    print("Pizza spawned")
 
     return newpos, pizza
 end
@@ -182,6 +213,12 @@ function GM:PlayerLoadout(ply)
     local desiredWeapon = tonumber(ply:GetInfo("tmpddm_weaponindex")) or 1
     local weapon = WEAPON_LIST[desiredWeapon] or WEAPON_LIST[1]
     ply:Give(weapon[2])
+
+    if weapon[2] == "deagle" then
+        GAMEMODE:SetPlayerSpeed(ply, 160*1.5, 320*1.5)
+    else
+        GAMEMODE:SetPlayerSpeed(ply, 160, 320)
+    end
     
     ply:SetInvulnTimer(CurTime() + 10)
 
@@ -201,14 +238,14 @@ function GM:PlayerSetModel(ply)
 end
 
 function GM:PlayerInitialSpawn(ply)
-    ply:SendLua("TMPDDM_MOTD()")
+    ply:SendLua("timer.Simple(1, function() TMPDDM_MOTD() end)")
 end
 function GM:ShowSpare1(ply)
     ply:SendLua("TMPDDM_MOTD()")
 end
 
 hook.Add("PlayerSay", "MOTDSAY", function(ply, text)
-    if text == "!motd" then
+    if text == "!motd" or text == "/motd" then
         ply:SendLua("TMPDDM_MOTD()")
     end
 end)

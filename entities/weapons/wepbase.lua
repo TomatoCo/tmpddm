@@ -398,7 +398,8 @@ local function WallRunning(ply, md, dt, wep)
                     local eyeVec = eyeAngs:Forward()
                     if (bit.band(buttons, IN_FORWARD) ~= 0) then
                         local x = math.max(0, vel:Length() * vel:GetNormalized():Dot(eyeVec))
-                        local speed = 200 + (400 / (1 + math.exp((x - 1000)/200)))
+                        local scale = md:GetMaxSpeed()/320
+                        local speed = (200 + (400 / (1 + math.exp((x - 1000)/200))))*scale
 
                         local accel = eyeVec*speed
                         accel.z = 0

@@ -15,6 +15,10 @@ function ENT:Initialize()
     end
 end
 
+function ENT:UpdateTransmitState()
+    return TRANSMIT_ALWAYS
+end
+
 function ENT:StartTouch(ent)
     if ent:IsPlayer() then
         if ent:GetHasPizza() then
@@ -39,6 +43,7 @@ function ENT:StartTouch(ent)
                 end
                 local pos = GAMEMODE:SpawnPizza("tmpddm_pickup", ent:GetPos())
                 GAMEMODE:SpawnPizza("tmpddm_dropoff", pos)
+                print("Delivered pizza spawning pizza")
                 self:Remove()
             end
         end
