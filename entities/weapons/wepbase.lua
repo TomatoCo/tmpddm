@@ -146,6 +146,31 @@ if SERVER then
     util.AddNetworkString( "TF_SoundEffects" )
 end
 
+sound.Add( {
+    name = "tf_ropeoff",
+    channel = CHAN_AUTO,
+    volume = 0.5,
+    level = SNDLVL_NORM ,
+    pitch = { 95, 110 },
+    sound = "ambient/machines/slicer3.wav"
+} )
+sound.Add( {
+    name = "tf_ropeon",
+    channel = CHAN_AUTO,
+    volume = 1.0,
+    level = SNDLVL_NORM ,
+    pitch = { 99, 101 },
+    sound = "weapons/crossbow/hit1.wav"
+} )
+sound.Add( {
+    name = "tf_boostsound",
+    channel = CHAN_AUTO,
+    volume = 1.0,
+    level = SNDLVL_NORM ,
+    pitch = { 75, 85 },
+    sound = "player/suit_sprint.wav"
+} )
+
 local function SafePlaySound(ply, sound)
     if CLIENT and IsFirstTimePredicted() then
         ply:EmitSound(sound)
@@ -188,8 +213,6 @@ local function WallrunSound(ply, tr)
     end
 end
 
-local boostSounds = {"player/suit_sprint.wav"}
-
 local ropeMinMass = 10
 local function TestCanRope(ply, wep)
     local user_aim = ply:GetAimVector()
@@ -231,7 +254,7 @@ local function RopeOn(ply, wep)
             piton:SetAngles( ( -1.0 * user_aim ):Angle() )
             piton:Spawn()
             piton:SetColor(0,0,0,255)
-            piton:EmitSound( "weapons/crossbow/hit1.wav" )
+            piton:EmitSound( "tf_ropeon" )
             piton:SetKeyValue( "targetname", "vip_piton1" )
             piton:SetMoveType(MOVETYPE_NONE)
             local physent = piton:GetPhysicsObject()
@@ -252,7 +275,7 @@ local function RopeOff(ply, wep)
         local ent = wep:GetRopeTarget()
         if IsValid(ent) then
             if SERVER then
-                ent:EmitSound( "ambient/machines/slicer3.wav" )
+                ent:EmitSound( "tf_ropeoff" )
                 ent:Remove()
             end
         end
@@ -433,14 +456,14 @@ local function DoubleJumping(ply, md, dt, wep)
         if (bit.band(md:GetOldButtons(), IN_JUMP) == 0) then
             local vel = md:GetVelocity()
             if wep:GetWallRunning() then
-                SafePlaySound(ply, boostSounds[math.random(#boostSounds)])
+                SafePlaySound(ply, "tf_boostsound")
                 vel = vel + -400*wep:GetWallDir()
                 vel = vel + Vector(0, 0, 300)
                 wep:SetWallDir(Vector(0,0,0))
                 wep:SetWallRunning(false)
                 wep:SetDoubleJumped(false)
             elseif wep:GetDoubleJumped() == false then
-                SafePlaySound(ply, boostSounds[math.random(#boostSounds)])
+                SafePlaySound(ply, "tf_boostsound")
                 local upForce = 300
                 if vel.z < 0 then
                     upForce = upForce - vel.z/2
