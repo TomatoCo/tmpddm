@@ -7,12 +7,12 @@ local dropoffIcon = Material("materials/dropoff.png")
 local carrierIcon = Material("materials/pizza.png")
 
 local DontDraw = {
-    --CHudWeaponSelection = true,
-    --CHudHealth = true,
-    --CHudSecondaryAmmo = true,
-    --CHudAmmo = true,
+    CHudWeaponSelection = true,
+    CHudHealth = true,
+    CHudSecondaryAmmo = true,
+    CHudAmmo = true,
     CHudCrosshair = true,
-    --CHudBattery = true
+    CHudBattery = true
 }
 
 function GM:HUDShouldDraw( name )
@@ -111,7 +111,7 @@ local function drawCrosshair(ply)
 
         if (invertColors == 1 or invertColors == 3) then
             DrawColorModify(invertTab1)
-        end        
+        end
         if (invertColors == 2 or invertColors == 3) then
             DrawColorModify(invertTab2)
         end
@@ -181,33 +181,33 @@ local function drawTarget(self)
     local trace = util.TraceLine( tr )
     if ( !trace.Hit ) then return end
     if ( !trace.HitNonWorld ) then return end
-    
+
     local text = "ERROR"
     local font = "TargetID"
-    
+
     if ( trace.Entity:IsPlayer() ) then
         text = trace.Entity:Nick()
     else
         return
         --text = trace.Entity:GetClass()
     end
-    
+
     surface.SetFont( font )
     local w, h = surface.GetTextSize( text )
-    
+
     local cx = ScrW() / 2
     local cy = ScrH() / 2
-    
+
     x = cx - w / 2
     y = cy + 30
-    
+
     -- The fonts internal drop shadow looks lousy with AA on
     draw.SimpleText( text, font, x + 1, y + 1, Color( 0, 0, 0, 120 ) )
     draw.SimpleText( text, font, x + 2, y + 2, Color( 0, 0, 0, 50 ) )
     draw.SimpleText( text, font, x, y, self:GetTeamColor( trace.Entity ) )
-    
+
     y = y + h + 5
-    
+
     local text
     local timeremaining = trace.Entity:GetInvulnTimer() - CurTime()
     if timeremaining > 0 then
@@ -217,11 +217,11 @@ local function drawTarget(self)
     end
 
     local font = "TargetIDSmall"
-    
+
     surface.SetFont( font )
     local w, h = surface.GetTextSize( text )
     local x = cx - w / 2
-    
+
     draw.SimpleText( text, font, x + 1, y + 1, Color( 0, 0, 0, 120 ) )
     draw.SimpleText( text, font, x + 2, y + 2, Color( 0, 0, 0, 50 ) )
     draw.SimpleText( text, font, x, y, self:GetTeamColor( trace.Entity ) )
@@ -281,6 +281,31 @@ function GM:HUDPaint()
     surface.SetTextPos(5,0)
     surface.DrawText("Press F3 to re-open the menu")
 
+    local text
+    local dt = LocalPlayer():GetInvulnTimer() - CurTime()
+    if dt > 0 then
+        text = "INVULN: " .. math.floor(dt) .. "s"
+    else
+        text = "HP: " .. LocalPlayer():Health()
+    end
+    local w,h = surface.GetTextSize(text)
+    surface.SetTextColor(0,0,0,255)
+    surface.SetTextPos(6,ScrH() - h + 1)
+    surface.DrawText(text)
+    surface.SetTextColor(255,255,255,255)
+    surface.SetTextPos(5,ScrH() - h)
+    surface.DrawText(text)
+
+    if IsValid(LocalPlayer():GetActiveWeapon()) then
+        text = "MAG: " .. LocalPlayer():GetActiveWeapon():Clip1()
+        local w,h = surface.GetTextSize(text)
+        surface.SetTextColor(0,0,0,255)
+        surface.SetTextPos(ScrW() - w + 1,ScrH() - h + 1)
+        surface.DrawText(text)
+        surface.SetTextColor(255,255,255,255)
+        surface.SetTextPos(ScrW() - w,ScrH() - h)
+        surface.DrawText(text)
+    end
 
     local destText = "Dropoff"
     if LocalPlayer():GetHasPizza() then
@@ -298,8 +323,6 @@ function GM:HUDPaint()
         surface.SetMaterial(carrierIcon)
         surface.SetDrawColor(255,255,255,225)
         surface.DrawTexturedRect(ScrW()/2 + w/2 - 32, y + h/2 - 32, 64, 64)
-
-        --TODO draw shit on screen
     else
         for k,v in pairs(player.GetAll()) do
             if v:GetHasPizza() then

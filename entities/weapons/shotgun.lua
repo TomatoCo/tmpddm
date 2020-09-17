@@ -55,7 +55,8 @@ SWEP.DoesStuff = true
 
 function SWEP:PrimaryAttack()
     self:EmitSound(self.Primary.Sound)
-    self:ShootBullet(10, 20, 0.12) --dmg, shots, spread
+    self:ShootBullet(10, 10, 0.12) --dmg, shots, spread
+    self:ShootBullet(10, 10, 0.06) --dmg, shots, spread
     self:SetNextPrimaryFire( CurTime() + 0.4 )
     self.Owner:SetInvulnTimer(0)
 end

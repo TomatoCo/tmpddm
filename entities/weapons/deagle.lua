@@ -53,6 +53,10 @@ SWEP.CSMuzzleFlashes = true
 
 SWEP.DoesStuff = true
 
+SWEP.MagneticBones = {
+    {"ValveBiped.Bip01_Head1", 0.999},
+}
+
 function SWEP:PrimaryAttack()
     self.Owner:SetInvulnTimer(0)
 
@@ -63,7 +67,7 @@ function SWEP:PrimaryAttack()
     end
 
     self:EmitSound(self.Primary.Sound)
-    self:ShootBullet(50, 1, 0.0) --dmg, shots, spread
+    self:ShootBullet(75, 1, 0.01) --dmg, shots, spread
     self:SetNextPrimaryFire( CurTime() + 0.1 )
     self:TakePrimaryAmmo(1)
 end
@@ -74,7 +78,8 @@ function SWEP:Reload()
 
         self.Weapon:SendWeaponAnim(ACT_VM_RELOAD)
 
-        local runtime = self.Weapon:SequenceDuration(self.Owner:GetViewModel():GetSequence())
+        local runtime = self.Weapon:SequenceDuration(self.Owner:GetViewModel():GetSequence())/1.4
+        self.Owner:GetViewModel():SetPlaybackRate(1.4)
         self:SetReloading(runtime)
     end
 end

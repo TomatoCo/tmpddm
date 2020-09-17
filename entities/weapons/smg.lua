@@ -63,7 +63,7 @@ function SWEP:PrimaryAttack()
     end
 
     self:EmitSound(self.Primary.Sound)
-    self:ShootBullet(15, 1, 0.04) --dmg, shots, spread
+    self:ShootBullet(15, 4, 0.04) --dmg, shots, spread
     self:SetNextPrimaryFire( CurTime() + 0.08 )
     self:TakePrimaryAmmo(1)
 end
@@ -74,7 +74,8 @@ function SWEP:Reload()
 
         self.Weapon:SendWeaponAnim(ACT_VM_RELOAD)
 
-        local runtime = self.Weapon:SequenceDuration(self.Owner:GetViewModel():GetSequence())
+        local runtime = self.Weapon:SequenceDuration(self.Owner:GetViewModel():GetSequence())/1.4
+        self.Owner:GetViewModel():SetPlaybackRate(1.4)
         self:SetReloading(runtime)
     end
 end

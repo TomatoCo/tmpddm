@@ -56,6 +56,81 @@ SWEP.CSMuzzleFlashes = true
 
 SWEP.DoesStuff = true
 
+SWEP.MagneticBones = {}
+
+local function computeMagnet(shootPos, target, bone)
+	local boneId = target:LookupBone(bone)
+	local bonePos = target:GetBonePosition(boneId)
+	return (bonePos - shootPos):GetNormal()
+end
+
+function SWEP:getShootVector()
+	local origin = self.Owner:GetShootPos()
+	local forwardDir = self.Owner:GetAimVector()
+
+	local realDir = forwardDir
+
+	local bestVector
+	local bestFrac = 0
+	for k,v in pairs(player.GetAll()) do
+		if v ~= self.Owner and IsValid(v) then
+			for _,b in pairs(self.MagneticBones) do
+				if b[1] then
+					local vec = computeMagnet(origin, v, b[1])
+					local dot = forwardDir:Dot(vec)
+					local frac = math.max(0, 1 - math.max(0, (1-dot)/(1-b[2])))^2
+					if frac > bestFrac then
+						bestVector = vec
+						bestFrac = frac
+					end
+				end
+			end
+		end
+	end
+	if bestFrac > 0 then
+		realDir = LerpVector(bestFrac, forwardDir, bestVector)
+	end
+	return realDir
+end
+
+--[[
+function SWEP:DrawHUD()
+	local actualaimvector = self:getShootVector()
+	actualaimvector = (self.Owner:GetShootPos() + 16384*actualaimvector):ToScreen()
+	surface.SetDrawColor(255,255,255,255)
+	surface.DrawLine(actualaimvector.x-5, actualaimvector.y-5, actualaimvector.x+5, actualaimvector.y+5)
+	surface.DrawLine(actualaimvector.x+5, actualaimvector.y-5, actualaimvector.x-5, actualaimvector.y+5)
+end
+]]
+
+function SWEP:ShootBullet( damage, num_bullets, aimcone )
+
+	if SERVER then
+		self.Owner:LagCompensation(true)
+	end
+
+	local origin = self.Owner:GetShootPos()
+	local realDir = self:getShootVector()
+
+	if SERVER then
+		self.Owner:LagCompensation(false)
+	end
+
+	local bullet = {}
+	bullet.Num		= num_bullets
+	bullet.Src		= origin			-- Source
+	bullet.Dir		= realDir			-- Dir of bullet
+	bullet.Spread	= Vector( aimcone, aimcone, 0 )		-- Aim Cone
+	bullet.Tracer	= 5						-- Show a tracer on every x bullets
+	bullet.Force	= 1						-- Amount of force to give to phys objects
+	bullet.Damage	= damage
+	bullet.AmmoType = self.Primary.Ammo
+
+	self.Owner:FireBullets( bullet )
+	self:ShootEffects()
+
+end
+
 function SWEP:PrimaryAttack()
     self:EmitSound(self.Primary.Sound)
     self:ShootBullet(15, 12, 0.15) --dmg, shots, spread
@@ -562,7 +637,7 @@ if CLIENT then
                 wallDir = wep:GetWallDir()
                 wallMod = wallMod + dt
             else
-                --TODO trace in direction of travel, decide if about to run. 
+                --TODO trace in direction of travel, decide if about to run.
                 wallMod = wallMod - dt
             end
 

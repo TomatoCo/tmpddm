@@ -54,6 +54,11 @@ SWEP.CSMuzzleFlashes = true
 
 SWEP.DoesStuff = true
 
+SWEP.MagneticBones = {
+    {"ValveBiped.Bip01_Spine2", 0.9925},
+    {"ValveBiped.Bip01_Head1", 0.9975},
+}
+
 function SWEP:PrimaryAttack()
     self.Owner:SetInvulnTimer(0)
     self:SetNextPrimaryFire( CurTime() + 0.125 )
@@ -68,9 +73,8 @@ function SWEP:Think()
         local downTime = self:GetTriggerDownTime() + FrameTime()
 
         if not self.Owner:KeyDown(IN_ATTACK) then
-            --TODO different sound for heavy attack, draw bigass tracer through the air
             if downTime > 0.5 then
-                self:ShootBullet(75, 1, 0.0) --dmg, shots, spread
+                self:ShootBullet(75, 1, 0.0) --dmg, shots, spread --TODO add some autoaim
                 self:EmitSound(self.Primary.BigSound)
 
                 local start, endpos = self.Owner:GetShootPos(), self.Owner:GetEyeTrace().HitPos
@@ -85,7 +89,7 @@ function SWEP:Think()
                 util.Effect("smoketrail",fx)
 
             else
-                self:ShootBullet(25, 1, 0.03) --dmg, shots, spread
+                self:ShootBullet(25, 1, 0.02) --dmg, shots, spread
                 self:EmitSound(self.Primary.Sound)
             end
             self:SetTriggerDownTime(-1)

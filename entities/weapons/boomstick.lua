@@ -70,6 +70,10 @@ function SWEP:PrimaryAttack()
     self:TakePrimaryAmmo(1)
 
     if SERVER then
+        if SERVER then
+            self.Owner:LagCompensation(true)
+        end
+
         local ent = ents.Create( "tmpddm_grenade" )
 
         if ( !IsValid( ent ) ) then return end
@@ -90,6 +94,10 @@ function SWEP:PrimaryAttack()
         phys:EnableGravity( false)
         phys:ApplyForceCenter((self.Owner:GetAimVector() * 10000) + self.Owner:GetVelocity())
         phys:AddAngleVelocity(Vector(0,5000,0))
+
+        if SERVER then
+            self.Owner:LagCompensation(false)
+        end
     end
 
 end
@@ -100,7 +108,8 @@ function SWEP:Reload()
 
         self.Weapon:SendWeaponAnim(ACT_VM_RELOAD)
 
-        local runtime = self.Weapon:SequenceDuration(self.Owner:GetViewModel():GetSequence())
+        local runtime = self.Weapon:SequenceDuration(self.Owner:GetViewModel():GetSequence())/1.4
+        self.Owner:GetViewModel():SetPlaybackRate(1.4)
         self:SetReloading(runtime)
     end
 end
