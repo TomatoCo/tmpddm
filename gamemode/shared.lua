@@ -1,3 +1,6 @@
+-- Copyright (c) 2020 TomatoSoup
+-- This file and tmpddm gamemode are released under AGPL
+
 GM.Name = "Pizza Delivery Deathmatch"
 GM.Author = "TomatoSoup"
 GM.Email = "N/A"

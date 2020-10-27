@@ -1,3 +1,6 @@
+-- Copyright (c) 2020 TomatoSoup
+-- This file and tmpddm gamemode are released under AGPL
+
 resource.AddFile("materials/pickup.png")
 resource.AddFile("materials/dropoff.png")
 resource.AddFile("materials/pizza.png")
@@ -190,12 +193,12 @@ function GM:PlayerLoadout(ply)
     else
         GAMEMODE:SetPlayerSpeed(ply, 160, 320)
     end
-    
+
     ply:SetInvulnTimer(CurTime() + 10)
 
     ply:Flashlight(true)
     ply:AllowFlashlight(true)
-   
+
     return true
 end
 
@@ -225,7 +228,7 @@ function GM:PlayerSpawn( ply )
     -- Your code
     ply:SetupHands() -- Create the hands and call GM:PlayerSetHandsModel
 
-    ply:SetObserverMode(OBS_MODE_NONE) 
+    ply:SetObserverMode(OBS_MODE_NONE)
     ply:UnSpectate()
 
     local ropeIndex = tonumber(ply:GetInfo("tmpddm_ropeindex")) or 1
@@ -247,7 +250,7 @@ local function dropPizza(ply)
         local structure = ents.Create("tmpddm_pickup")
         structure:SetPos(ply:GetPos())
         structure:Spawn()
-        
+
         timer.Simple(1, function() if IsValid(structure) then structure:StartDrop() end end)
     end
 end
@@ -259,7 +262,7 @@ function GM:PlayerDeath(ply, wep, attacker)
     return true
 end
 
-function GM:PlayerDisconnected( ply ) 
+function GM:PlayerDisconnected( ply )
     if ply:GetHasPizza() then
         dropPizza(ply)
     end

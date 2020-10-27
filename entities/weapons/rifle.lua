@@ -1,3 +1,6 @@
+-- Copyright (c) 2020 TomatoSoup
+-- This file and tmpddm gamemode are released under AGPL
+
 AddCSLuaFile( "rifle.lua" )
 
 SWEP.PrintName = "Rifle"
@@ -55,8 +58,8 @@ SWEP.CSMuzzleFlashes = true
 SWEP.DoesStuff = true
 
 SWEP.MagneticBones = {
-    {"ValveBiped.Bip01_Spine2", 0.9925},
-    {"ValveBiped.Bip01_Head1", 0.9975},
+    {"ValveBiped.Bip01_Spine2", 0.99925},
+    {"ValveBiped.Bip01_Head1", 0.99975},
 }
 
 function SWEP:PrimaryAttack()

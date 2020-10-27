@@ -1,3 +1,6 @@
+-- Copyright (c) 2020 TomatoSoup
+-- This file and tmpddm gamemode are released under AGPL
+
 AddCSLuaFile( "wepbase.lua" )
 
 CreateConVar("tf_ropehold", 0, bit.bor(FCVAR_USERINFO, FCVAR_ARCHIVE))
@@ -148,8 +151,12 @@ function SWEP:SetupDataTables()
 
     self:NetworkVar( "Bool", 0, "Roping")
     self:NetworkVar( "Float", 0, "RopeLength")
-    self:NetworkVar( "Entity", 0, "RopeTarget") -- the melon entity
-    self:NetworkVar( "Entity", 1, "RopedEnt") -- the entity the melon is attached to
+    self:NetworkVar( "Entity", 0, "RopedEnt") -- the entity the melon is attached to
+    self:NetworkVar( "Entity", 1, "TargetEnt") -- the entity that is shootable
+
+	self:NetworkVar("Float", 3, "RopeTargetX")
+	self:NetworkVar("Float", 4, "RopeTargetY")
+	self:NetworkVar("Float", 5, "RopeTargetZ")
 
     self:NetworkVar( "Bool", 1, "DoubleJumped")
 
@@ -164,8 +171,12 @@ function SWEP:SetupDataTables()
    if SERVER then
         self:SetRoping(false)
         self:SetRopeLength(-1)
-        self:SetRopeTarget(nil)
         self:SetRopedEnt(nil)
+		self:SetTargetEnt(nil)
+
+		self:SetRopeTargetX(0)
+		self:SetRopeTargetY(0)
+		self:SetRopeTargetZ(0)
 
         self:SetDoubleJumped(true)
 
@@ -188,10 +199,11 @@ hook.Add("PostDrawTranslucentRenderables", "TF_Roping", function()
         local wep = v:GetActiveWeapon()
         if wep.DoesStuff then
             if wep:GetRoping() then
-                local ent = wep:GetRopeTarget()
-                if IsValid(ent) then
+                local ent = wep:GetRopedEnt()
+                if IsValid(ent) or ent == game.GetWorld() then
                     local startPos = v:GetPos() + Vector(0,0,28)
-                    local endPos = ent:GetPos()
+
+                    local endPos = ent:LocalToWorld(Vector(wep:GetRopeTargetX(), wep:GetRopeTargetY(), wep:GetRopeTargetZ()))
                     local texOffset = 0
 
                     local texStart = texOffset*-0.4
@@ -221,22 +233,6 @@ if SERVER then
     util.AddNetworkString( "TF_SoundEffects" )
 end
 
-sound.Add( {
-    name = "tf_ropeoff",
-    channel = CHAN_AUTO,
-    volume = 0.5,
-    level = SNDLVL_NORM ,
-    pitch = { 95, 110 },
-    sound = "ambient/machines/slicer3.wav"
-} )
-sound.Add( {
-    name = "tf_ropeon",
-    channel = CHAN_AUTO,
-    volume = 1.0,
-    level = SNDLVL_NORM ,
-    pitch = { 99, 101 },
-    sound = "weapons/crossbow/hit1.wav"
-} )
 sound.Add( {
     name = "tf_boostsound",
     channel = CHAN_AUTO,
@@ -298,16 +294,12 @@ local function TestCanRope(ply, wep)
     if tr.HitWorld then return true, tr end
     if tr.HitNonWorld and tr.Entity:IsValid() and ( not tr.Entity:IsPlayer() ) and ( not tr.Entity:IsWeapon() ) then
         if not tr.Entity then return end
-        local phys = tr.Entity:GetPhysicsObject()
-        if not phys or not IsValid(phys) then return end
-        if not (phys:GetMass() > ropeMinMass) then return end
         return true, tr
     end
 end
 
 local function RopeOn(ply, wep)
     local can, tr = TestCanRope(ply)
-
     if can then
         local ent = tr.Entity
         local user_aim = tr.Normal
@@ -318,42 +310,33 @@ local function RopeOn(ply, wep)
         wep:SetRopeLength(tension)
 
         wep:SetRopedEnt(ent)
-        if tr.HitWorld then
-            ent = nil
-        end
 
-        if SERVER then
-            local piton = ents.Create( "prop_physics" )
-            piton:SetModel( "models/props_junk/watermelon01.mdl" ) --"models/props_junk/GlassBottle01a.mdl" "models/kunai.mdl"
-            piton:SetPos( tr.HitPos + ( user_aim * -2.0 ) )
-            piton:SetAngles( ( -1.0 * user_aim ):Angle() )
-            piton:Spawn()
-            piton:SetColor(0,0,0,255)
-            piton:EmitSound( "tf_ropeon" )
-            piton:SetKeyValue( "targetname", "vip_piton1" )
-            piton:SetMoveType(MOVETYPE_NONE)
-            local physent = piton:GetPhysicsObject()
-            physent:EnableMotion(false)
-            if ent then
-                piton:SetParent(ent)
-                physent:EnableCollisions(false)
-            end
+		local offset = ent:WorldToLocal(tr.HitPos)
+		wep:SetRopeTargetX(offset.x)
+		wep:SetRopeTargetY(offset.y)
+		wep:SetRopeTargetZ(offset.z)
 
-            wep:SetRopeTarget(piton)
-        end
+		if SERVER then
+			local te = ents.Create("ts_ropepoint")
+			te:SetPos(tr.HitPos)
+			te:Spawn()
+			if not tr.HitWorld then
+				te:SetParent(tr.Entity)
+			end
+			te.OwnerWep = wep
+			wep:SetTargetEnt(te)
+		end
+
     end
 
 end
 
 local function RopeOff(ply, wep)
     if wep:GetRoping() then
-        local ent = wep:GetRopeTarget()
-        if IsValid(ent) then
-            if SERVER then
-                ent:EmitSound( "tf_ropeoff" )
-                ent:Remove()
-            end
-        end
+		if SERVER then
+			wep:GetTargetEnt():Remove()
+			--TODO remove ropepoint
+		end
         wep:SetRoping(false)
         wep:SetRopeLength(0)
     end
@@ -397,13 +380,12 @@ local function Roping(ply, md, dt, wep)
     end
 
     if wep:GetRoping() then
-        local ent = wep:GetRopeTarget()
         local ropedEnt = wep:GetRopedEnt()
-        if not (IsValid(ent) and (IsValid(ropedEnt) or ropedEnt == game.GetWorld())) then
+        if not IsValid(ropedEnt) and ropedEnt ~= game.GetWorld() then
             RopeOff(ply, wep)
         else
             local plyPos = md:GetOrigin()
-            local melPos = ent:GetPos()
+            local melPos = ropedEnt:LocalToWorld(Vector(wep:GetRopeTargetX(), wep:GetRopeTargetY(), wep:GetRopeTargetZ()))
 
             local tension = melPos - plyPos
             local stretch = tension:Length()
@@ -429,10 +411,10 @@ local function Roping(ply, md, dt, wep)
 
                 local physObj
                 if IsValid(ropedEnt) and not ropedEnt:IsWorld() then
-                    physObj = ropedEnt:GetPhysicsObject()
+                	physObj = ropedEnt:GetPhysicsObject()
                 end
 
-                if IsValid(physObj) then
+                if IsValid(physObj) and (physObj:GetMass() > ropeMinMass) then
                     userVel = userVel - ropedEnt:GetVelocity()
                 end
 

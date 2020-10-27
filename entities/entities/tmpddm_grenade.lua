@@ -15,17 +15,17 @@ if SERVER then
         self.Entity:SetMoveType( MOVETYPE_VPHYSICS )
         self.Entity:SetSolid( SOLID_VPHYSICS )
         self.Entity:DrawShadow( true )
-        
+
         local phys = self.Entity:GetPhysicsObject()
 
         util.SpriteTrail( self.Entity, 0, Color(255,255,255,255), false, 32, 0, 0.5, 1/16, "trails/plasma" )
-        
+
         if (phys:IsValid()) then
             phys:Wake()
         end
-        
+
         self.hasexploded = false
-        self.radius = 200
+        self.radius = 300
         self.damage = 150
     end
 
@@ -34,11 +34,11 @@ if SERVER then
         self.hasexploded = true
 
         local pos = self.Entity:GetPos()
-        
+
         self.Entity:EmitSound(explodeSounds[math.random(#explodeSounds)])
-        
+
         util.BlastDamage( self.Entity, self.Owner, pos, self.radius, self.damage )
-        
+
         local effectdata = EffectData()
         effectdata:SetOrigin( pos )
         util.Effect( "Explosion", effectdata, true, true )

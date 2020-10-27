@@ -1,4 +1,7 @@
-"tomatofall"
+// Copyright (c) 2020 TomatoSoup
+// This file and tmpddm gamemode are released under AGPL
+
+"tmpddm"
 {
 	"base"		"base"
 	"title"		"Pizza Delivery Deathmatch"

@@ -1,3 +1,6 @@
+-- Copyright (c) 2020 TomatoSoup
+-- This file and tmpddm gamemode are released under AGPL
+
 AddCSLuaFile( "deagle.lua" )
 
 SWEP.PrintName = "DEAGLE"

@@ -1,3 +1,6 @@
+-- Copyright (c) 2020 TomatoSoup
+-- This file and tmpddm gamemode are released under AGPL
+
 SWEP.Primary.Automatic = false
 
 local trace = {start = Vector(0,0,0), endpos = Vector(0,0,0), filter = nil}
@@ -17,8 +20,8 @@ end
 function SWEP:Think()
     for _,v in ipairs(self.posList) do
 
-        debugoverlay.Cross( v, 20, 1, Color( 0, 255, 0 ), false ) 
-        debugoverlay.Cross( v, 10, 1, Color( 255, 0, 0 ), true ) 
+        debugoverlay.Cross( v, 20, 1, Color( 0, 255, 0 ), false )
+        debugoverlay.Cross( v, 10, 1, Color( 255, 0, 0 ), true )
     end
 end
 

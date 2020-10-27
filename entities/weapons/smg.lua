@@ -1,3 +1,6 @@
+-- Copyright (c) 2020 TomatoSoup
+-- This file and tmpddm gamemode are released under AGPL
+
 AddCSLuaFile( "shotgun.lua" )
 
 SWEP.PrintName = "SMG"
@@ -63,7 +66,7 @@ function SWEP:PrimaryAttack()
     end
 
     self:EmitSound(self.Primary.Sound)
-    self:ShootBullet(15, 4, 0.04) --dmg, shots, spread
+    self:ShootBullet(15, 3, 0.04) --dmg, shots, spread
     self:SetNextPrimaryFire( CurTime() + 0.08 )
     self:TakePrimaryAmmo(1)
 end

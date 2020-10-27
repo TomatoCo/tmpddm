@@ -1,3 +1,6 @@
+-- Copyright (c) 2020 TomatoSoup
+-- This file and tmpddm gamemode are released under AGPL
+
 include( "shared.lua" )
 
 CreateConVar("tf_highcontrastxhair", 0, bit.bor(FCVAR_USERINFO, FCVAR_ARCHIVE))
@@ -19,6 +22,13 @@ function GM:HUDShouldDraw( name )
     if DontDraw[name] then return false end
     return true
 end
+
+local function getScale(size)
+    return size * math.min((ScrW()/640), ScrH()/480)
+end
+
+local smallscale = getScale(16)
+surface.CreateFont("TS_HUD_Full", {font = "Coolvetica", size=smallscale})
 
 local invertTab1 = {
     [ "$pp_colour_addr" ] = 0.0,
@@ -150,7 +160,7 @@ local function drawIcon(ent, icon, texttop, textbottom)
         surface.SetDrawColor(255,255,255,realAlpha)
         surface.DrawTexturedRect(x-32, y-32, 64, 64)
 
-        surface.SetFont( "CloseCaption_Bold" )
+        surface.SetFont( "TS_HUD_Full" )
 
         surface.SetTextPos(ScrW()/2, ScrH()/2)
         local w1, h1 = surface.GetTextSize(texttop)
@@ -246,7 +256,7 @@ function GM:HUDPaint()
         end
     end
 
-    surface.SetFont( "CloseCaption_Bold" )
+    surface.SetFont( "TS_HUD_Full" )
     surface.SetTextColor(0,0,0,255)
     surface.SetTextPos(1,1)
     local maxwidth = 0

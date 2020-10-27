@@ -1,3 +1,6 @@
+-- Copyright (c) 2020 TomatoSoup
+-- This file and tmpddm gamemode are released under AGPL
+
 WEAPON_LIST = {
     {"models/weapons/w_shot_xm1014.mdl", "shotgun", "Shotgun", "Semi shotgun. No reloading."},
     {"models/weapons/w_smg_p90.mdl", "smg", "Submachine Gun", "High capacity SMG. Reloads."},
@@ -44,7 +47,11 @@ if CLIENT then
     Quote Raimi Spiderman as much as possible.
     ]]
 
-    local contact = "Join our discord. Ask for TomatoSoup. Leave feedback. https://discord.gg/2zA2kxV"
+    local contact = [[
+    Join our discord. Ask for TomatoSoup. Leave feedback. https://discord.gg/2zA2kxV
+    Copyright (C) 2020 TomatoSoup. This gamemode is licensed under the Affero GPL.
+    Source code is available at https://github.com/TomatoCo/tmpddm
+    ]]
 
     function TMPDDM_MOTD()
 
@@ -72,7 +79,7 @@ if CLIENT then
         InstructionsLabel:SetDark(true)
 
         local ContactLabel = vgui.Create( "DLabel", InstructionPanel )
-        ContactLabel:SetPos( 5, 295 )
+        ContactLabel:SetPos( 5, 245 )
         ContactLabel:SetText( contact )
         ContactLabel:SetFont("Trebuchet18")
         ContactLabel:SetSize( 700, 280)
