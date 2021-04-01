@@ -40,6 +40,7 @@ function ENT:StartTouch(ent)
     if ent:IsPlayer() then
         ent:SetHasPizza(true)
         ent:SetInvulnTimer(CurTime() + 2)
+        --TODO play "Pizza time!" on pickup
 
         if SERVER then
             self:Remove()

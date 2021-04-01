@@ -487,7 +487,7 @@ local function WallRunning(ply, md, dt, wep)
                         vel = vel + accel*dt
                     end
                     if vel:GetNormal().z < eyeVec.z and vel.z < 50 then
-                        WallrunSound(ply, tr)
+                        WallrunSound(ply, tr) --TODO these sounds are not played in SinglePlayer. Why?
                         vel = vel + Vector(0,0,200)
                     end
 

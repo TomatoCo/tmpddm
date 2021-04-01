@@ -7,5 +7,6 @@
 	"title"		"Pizza Delivery Deathmatch"
 	"maps"		"^gm_bigcity"
 	"menusystem"	"1"
+	"category"	"pvp"
 
 }
