@@ -157,6 +157,7 @@ function SWEP:SetupDataTables()
 	self:NetworkVar("Float", 3, "RopeTargetX")
 	self:NetworkVar("Float", 4, "RopeTargetY")
 	self:NetworkVar("Float", 5, "RopeTargetZ")
+	self:NetworkVar("Float", 6, "SlideSpeed")
 
     self:NetworkVar( "Bool", 1, "DoubleJumped")
 
@@ -187,6 +188,7 @@ function SWEP:SetupDataTables()
 
         self:SetReloading(-1)
         self:SetTriggerDownTime(-1)
+        self:SetSlideSpeed(-1)
     end
 
 end
@@ -241,6 +243,35 @@ sound.Add( {
     pitch = { 75, 85 },
     sound = "player/suit_sprint.wav"
 } )
+
+sound.Add( {
+    name = "tf_slidestart",
+    channel = CHAN_AUTO,
+    volume = 1.0,
+    level = SNDLVL_NORM ,
+    pitch = { 75, 85 },
+    sound = {"npc/combine_soldier/gear1.wav",
+			"npc/combine_soldier/gear2.wav",
+			"npc/combine_soldier/gear3.wav",
+			"npc/combine_soldier/gear4.wav",
+			"npc/combine_soldier/gear5.wav",
+			"npc/combine_soldier/gear6.wav"}
+} )
+
+sound.Add( {
+    name = "tf_slideend",
+    channel = CHAN_AUTO,
+    volume = 1.0,
+    level = SNDLVL_NORM ,
+    pitch = { 95, 105 },
+    sound = {"npc/metropolice/gear1.wav",
+			"npc/metropolice/gear2.wav",
+			"npc/metropolice/gear3.wav",
+			"npc/metropolice/gear4.wav",
+			"npc/metropolice/gear5.wav",
+			"npc/metropolice/gear6.wav"}
+} )
+
 
 local function SafePlaySound(ply, sound)
     if CLIENT and IsFirstTimePredicted() then
@@ -562,6 +593,34 @@ local function SprintBoostJump(ply, md, dt, wep)
     end
 end
 
+local function Slide(ply, md, dt, wep)
+	local vel = md:GetVelocity()
+	local speed = vel:Length()
+	local runspeed = ply:GetRunSpeed()
+    local buttons = md:GetButtons()
+	if ply:Crouching() and ply:IsOnGround() and bit.band( buttons, IN_JUMP ) == 0 and speed > runspeed then
+		if wep:GetSlideSpeed() == -1 then
+			wep:SetSlideSpeed(speed)
+			SafePlaySound(ply, "tf_slidestart")
+		end
+		speed = wep:GetSlideSpeed()
+		local dir = vel:GetNormalized()
+		local newSpeed = math.max(0, speed - (runspeed*dt*0.5))
+		wep:SetSlideSpeed(newSpeed)
+		md:SetVelocity(newSpeed*dir)
+	else
+		speed = wep:GetSlideSpeed()
+		if speed > 0 then
+			--local dir = md:GetAngles():Forward() -- based on the direction the player is looking
+			--local dir = vel:GetNormalized() -- based on the movedata direction. This causes jerky jumping for unknown reasons. It returns a much lower than expected magnitude, and in a different direction. It seems to act weird whenever the camera angle does not match the slide direction.
+			local dir = ply:GetVelocity():GetNormalized() -- based on the non-movedata direction. This does not have jerky jumping. The gameplay is good but the code feels vaguely... wrong.
+			md:SetVelocity(speed*dir)
+			SafePlaySound(ply, "tf_slideend")
+		end
+		wep:SetSlideSpeed(-1)
+	end
+end
+
 local function PackUpWeapon(ply, wep)
     if wep:GetRoping() then
         RopeOff(ply, wep)
@@ -569,6 +628,7 @@ local function PackUpWeapon(ply, wep)
     wep:SetWallDir(Vector(0,0,0))
     wep:SetWallRunning(false)
     wep:SetDoubleJumped(true)
+	wep:SetSlideSpeed(-1)
 end
 
 hook.Add("Move", "DoTheMoveful", function(ply, md)
@@ -586,8 +646,18 @@ hook.Add("Move", "DoTheMoveful", function(ply, md)
             WallRunning(ply, md, dt, wep)
             DoubleJumping(ply, md, dt, wep)
             SprintBoostJump(ply, md, dt, wep)
+			Slide(ply, md, dt, wep)
         end
     end
+end)
+
+hook.Add("PlayerFootstep", "NoSlidingSteps", function(ply)
+	local wep = ply:GetActiveWeapon()
+	if wep.DoesStuff then
+		if wep:GetSlideSpeed() > 0 then
+			return true
+		end
+	end
 end)
 
 function SWEP:OnRemove()
@@ -618,7 +688,10 @@ if CLIENT then
             if wep:GetWallRunning() then
                 wallDir = wep:GetWallDir()
                 wallMod = wallMod + dt
-            else
+            elseif wep:GetSlideSpeed() > 0 then
+				wallDir = ply:GetVelocity():GetNormalized()
+				wallMod = wallMod + dt
+			else
                 --TODO trace in direction of travel, decide if about to run.
                 wallMod = wallMod - dt
             end

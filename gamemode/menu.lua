@@ -31,6 +31,7 @@ if CLIENT then
 
     local instructions = [[
     speedrun of instructions:
+	Crouch to slide.
     Shift to sprint, reel in rope, and wallrun.
     Spacebar to jump off of a wall and double jump.
     Wallrunning is pretty automatic. Hold left/right if it gives you trouble.
