@@ -41,7 +41,9 @@ if SERVER then
     end
 
     function ENT:OnRemove()
-        self.OwnerWep:SetRoping(false)
+        if IsValid(self.OwnerWep) then
+            self.OwnerWep:SetRoping(false)
+        end
         self:EmitSound( "tf_ropeoff" )
     end
 

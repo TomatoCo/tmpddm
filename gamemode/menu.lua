@@ -30,8 +30,9 @@ if CLIENT then
     CreateConVar( "tmpddm_weaponindex", "0", { FCVAR_ARCHIVE, FCVAR_USERINFO }, "The player model to use" )
 
     local instructions = [[
+
     speedrun of instructions:
-	Crouch to slide.
+    Crouch to slide.
     Shift to sprint, reel in rope, and wallrun.
     Spacebar to jump off of a wall and double jump.
     Wallrunning is pretty automatic. Hold left/right if it gives you trouble.
