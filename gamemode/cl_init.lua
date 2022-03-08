@@ -237,10 +237,33 @@ local function drawTarget(self)
     draw.SimpleText( text, font, x, y, self:GetTeamColor( trace.Entity ) )
 end
 
+local function alivewep()
+    return LocalPlayer():Alive() and LocalPlayer():GetActiveWeapon().DoesStuff
+end
+
+local instructables = {
+    {"Hold !KEY! to wallrun", "+speed", function() return alivewep() and not LocalPlayer():IsOnGround() end},
+    {"Press !KEY! to attach rope", "+attack2", function() return alivewep() and not LocalPlayer():GetActiveWeapon():GetRoping() end},
+    {"Press !KEY! to deattach rope", "+attack2", function() return alivewep() and LocalPlayer():GetActiveWeapon():GetRoping() end},
+    {"Press !KEY! to double jump", "+jump", function() return alivewep() and not LocalPlayer():IsOnGround() and not LocalPlayer():GetActiveWeapon():GetDoubleJumped() end},
+    {"Hold !KEY! to crouchslide", "+duck", function() return alivewep() and not LocalPlayer():IsOnGround() and LocalPlayer():GetVelocity():Length() > 300 end},
+    {"Press !KEY! to reload (stops adv movement)", "+reload", function() return alivewep() and LocalPlayer():GetActiveWeapon():Clip1() > -1 end},
+    {"Press !KEY! to open the menu", "gm_showspare1", function() return true end}
+}
+
+local function replaceKey(line)
+    local result = line[1]
+    if string.match(result, "!KEY!") then
+        local key = input.LookupBinding(line[2])
+        if key then
+            result = string.gsub(result, "!KEY!", key)
+        end
+    end
+    return result
+end
+
 
 function GM:HUDPaint()
-
-    --TODO custom health display with invulernability display.
 
     local plys = {}
     for k,v in pairs(player.GetAll()) do
@@ -284,12 +307,27 @@ function GM:HUDPaint()
         y = y + h
     end
 
-    surface.SetTextColor(0,0,0,255)
-    surface.SetTextPos(6,1)
-    surface.DrawText("Press F3 to re-open the menu") --gm_showspare1
-    surface.SetTextColor(255,255,255,255)
-    surface.SetTextPos(5,0)
-    surface.DrawText("Press F3 to re-open the menu")
+    local y = ScrH() - 5
+    surface.SetFont( "TargetID" )
+
+    for k,v in pairs(instructables) do
+        if v[3]() then
+            local text = replaceKey(v)
+            local w, h = surface.GetTextSize( text )
+            local x = ScrW()/2 - w/2
+            y = y - h
+
+            surface.SetTextPos( x + 1, y + 1 )
+            surface.SetTextColor(0,0,0,255)
+            surface.DrawText(text)
+            surface.SetTextPos( x, y )
+            surface.SetTextColor(255,255,255,255)
+            surface.DrawText(text)
+
+        end
+    end
+
+    surface.SetFont( "TS_HUD_Full" )
 
     local text
     local dt = LocalPlayer():GetInvulnTimer() - CurTime()
@@ -298,22 +336,24 @@ function GM:HUDPaint()
     else
         text = "HP: " .. LocalPlayer():Health()
     end
+    local x,y = ScrW()/2, ScrH()*0.75
     local w,h = surface.GetTextSize(text)
     surface.SetTextColor(0,0,0,255)
-    surface.SetTextPos(6,ScrH() - h + 1)
+    surface.SetTextPos(x+1 - w/2,y + 1)
     surface.DrawText(text)
     surface.SetTextColor(255,255,255,255)
-    surface.SetTextPos(5,ScrH() - h)
+    surface.SetTextPos(x - w/2,y)
     surface.DrawText(text)
 
-    if IsValid(LocalPlayer():GetActiveWeapon()) then
+    if IsValid(LocalPlayer():GetActiveWeapon()) and LocalPlayer():GetActiveWeapon():Clip1() > -1 then
+        y = y + h
         text = "MAG: " .. LocalPlayer():GetActiveWeapon():Clip1()
         local w,h = surface.GetTextSize(text)
         surface.SetTextColor(0,0,0,255)
-        surface.SetTextPos(ScrW() - w + 1,ScrH() - h + 1)
+        surface.SetTextPos(x+1 - w/2,y + 1)
         surface.DrawText(text)
         surface.SetTextColor(255,255,255,255)
-        surface.SetTextPos(ScrW() - w,ScrH() - h)
+        surface.SetTextPos(x - w/2,y)
         surface.DrawText(text)
     end
 
@@ -364,7 +404,16 @@ function GM:HUDPaint()
     drawCrosshair(LocalPlayer())
 
     drawTarget(self)
-    -- also do speed meter
+
+    local text =  math.floor(LocalPlayer():GetVelocity():Length()/52.5 + 0.5) .. "m/s"
+    local w,h = surface.GetTextSize(text)
+    local x,y = 5, ScrH() - 5 - h
+    surface.SetTextColor(0,0,0,255)
+    surface.SetTextPos(x+1,y + 1)
+    surface.DrawText(text)
+    surface.SetTextColor(255,255,255,255)
+    surface.SetTextPos(x,y)
+    surface.DrawText(text)
 end
 
 

@@ -16,6 +16,7 @@ function ENT:Initialize()
     self.startpos = self:GetPos()
     self.endpos = Vector(0,0,0)
     self.fallend = 0
+    self.canPickUp = true
     self:SetRespawnTime(-1)
 
     if SERVER then
@@ -37,7 +38,8 @@ function ENT:SetupDataTables()
 end
 
 function ENT:StartTouch(ent)
-    if ent:IsPlayer() then
+    if ent:IsPlayer() and self.canPickUp then
+        self.canPickUp = false
         ent:SetHasPizza(true)
         ent:SetInvulnTimer(CurTime() + 2)
         --TODO play "Pizza time!" on pickup

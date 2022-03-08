@@ -16,6 +16,7 @@ function ENT:Initialize()
     if SERVER then
         self:SetTrigger(true)
     end
+    self.canDropOff = true
 end
 
 function ENT:UpdateTransmitState()
@@ -23,8 +24,9 @@ function ENT:UpdateTransmitState()
 end
 
 function ENT:StartTouch(ent)
-    if ent:IsPlayer() then
+    if ent:IsPlayer() and self.canDropOff then
         if ent:GetHasPizza() then
+            self.canDropOff = false
             ent:SetHasPizza(false)
             local score = ent:GetScore()+1
             if score == 10 then

@@ -30,7 +30,6 @@ if CLIENT then
     CreateConVar( "tmpddm_weaponindex", "0", { FCVAR_ARCHIVE, FCVAR_USERINFO }, "The player model to use" )
 
     local instructions = [[
-
     speedrun of instructions:
     Crouch to slide.
     Shift to sprint, reel in rope, and wallrun.
@@ -50,6 +49,8 @@ if CLIENT then
     ]]
 
     local contact = [[
+    As seen on CallMeCarson!
+
     Join our discord. Ask for TomatoSoup. Leave feedback. https://discord.gg/2zA2kxV
     Copyright (C) 2020 TomatoSoup. This gamemode is licensed under the Affero GPL.
     Source code is available at https://github.com/TomatoCo/tmpddm
@@ -77,7 +78,7 @@ if CLIENT then
         InstructionsLabel:SetPos( 5, 5 )
         InstructionsLabel:SetText( instructions )
         InstructionsLabel:SetFont("Trebuchet18")
-        InstructionsLabel:SetSize( 700, 285)
+        InstructionsLabel:SetSize( 700, 300)
         InstructionsLabel:SetDark(true)
 
         local ContactLabel = vgui.Create( "DLabel", InstructionPanel )
