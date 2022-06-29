@@ -243,6 +243,7 @@ end
 
 local instructables = {
     {"Hold !KEY! to wallrun", "+speed", function() return alivewep() and not LocalPlayer():IsOnGround() end},
+    {"Hold !KEY! to reel in the rope", "+speed", function() return alivewep() and LocalPlayer():GetActiveWeapon():GetRoping() end},
     {"Press !KEY! to attach rope", "+attack2", function() return alivewep() and not LocalPlayer():GetActiveWeapon():GetRoping() end},
     {"Press !KEY! to deattach rope", "+attack2", function() return alivewep() and LocalPlayer():GetActiveWeapon():GetRoping() end},
     {"Press !KEY! to double jump", "+jump", function() return alivewep() and not LocalPlayer():IsOnGround() and not LocalPlayer():GetActiveWeapon():GetDoubleJumped() end},
