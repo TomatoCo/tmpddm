@@ -189,7 +189,7 @@ function GM:PlayerLoadout(ply)
     ply:Give(weapon[2])
 
     if weapon[2] == "deagle" then
-        GAMEMODE:SetPlayerSpeed(ply, 160*1.5, 320*1.5)
+        GAMEMODE:SetPlayerSpeed(ply, 160*1.1, 320*1.1)
     else
         GAMEMODE:SetPlayerSpeed(ply, 160, 320)
     end
