@@ -77,7 +77,7 @@ function SWEP:Think()
 
         if not self.Owner:KeyDown(IN_ATTACK) then
             if downTime > 0.5 then
-                self:ShootBullet(75, 1, 0.0) --dmg, shots, spread
+                self:ShootBullet(100, 1, 0.0) --dmg, shots, spread
                 self:EmitSound(self.Primary.BigSound)
 
                 local start, endpos = self.Owner:GetShootPos(), self.Owner:GetEyeTrace().HitPos

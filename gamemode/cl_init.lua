@@ -4,6 +4,7 @@
 include( "shared.lua" )
 
 CreateConVar("tf_highcontrastxhair", 0, bit.bor(FCVAR_USERINFO, FCVAR_ARCHIVE))
+CreateConVar("pizza_nohud", 0, bit.bor(FCVAR_USERINFO, FCVAR_ARCHIVE))
 
 local pickupIcon = Material("materials/pickup.png")
 local dropoffIcon = Material("materials/dropoff.png")
@@ -55,6 +56,7 @@ local invertTab2 = {
 }
 
 local function drawCrosshair(ply)
+
     local dir = ply:GetAimVector()
     local startpos = ply:GetShootPos()
     local endpos = startpos+(16384*dir)
@@ -265,6 +267,10 @@ end
 
 
 function GM:HUDPaint()
+    
+    local nohud = LocalPlayer():GetInfoNum("pizza_nohud", 0)
+    LocalPlayer():DrawViewModel(nohud == 0)
+    if nohud > 0 then return end
 
     local plys = {}
     for k,v in pairs(player.GetAll()) do
